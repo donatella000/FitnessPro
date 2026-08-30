@@ -22,7 +22,7 @@ const iniciarServidor = async () => {
     console.log('✅ Conexión exitosa a la base de datos MySQL.');
 
     app.listen(PORT, () => {
-      console.log(🚀 Servidor corriendo en el puerto http://localhost:${PORT});
+      console.log('🚀 Servidor corriendo en el puerto http://localhost:${PORT}');
     });
   } catch (error) {
     console.error('❌ Error al conectar con la base de datos MySQL:', error.message);
