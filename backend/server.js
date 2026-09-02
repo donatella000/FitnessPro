@@ -3,12 +3,15 @@ const cors = require('cors');
 require('dotenv').config();
 const db = require('./src/config/db');
 
-// Importación de módulos de rutas
+// Importación de todos los módulos de rutas
 const authRoutes = require('./src/routes/authRoutes');
 const usuarioRoutes = require('./src/routes/usuarioRoutes');
 const claseRoutes = require('./src/routes/claseRoutes');
 const turnoRoutes = require('./src/routes/turnoRoutes');
 const rutinaRoutes = require('./src/routes/rutinaRoutes');
+const suscripcionRoutes = require('./src/routes/suscripcionRoutes');
+const pagoRoutes = require('./src/routes/pagoRoutes');
+const puntosRoutes = require('./src/routes/puntosRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,12 +20,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Montaje de rutas
+// Montaje de las rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/clases', claseRoutes);
 app.use('/api/turnos', turnoRoutes);
 app.use('/api/rutinas', rutinaRoutes);
+app.use('/api/suscripciones', suscripcionRoutes);
+app.use('/api/pagos', pagoRoutes);
+app.use('/api/puntos', puntosRoutes);
 
 // Ruta de prueba de salud de la API
 app.get('/api/saludo', (req, res) => {

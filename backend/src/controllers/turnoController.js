@@ -212,7 +212,7 @@ const validarAccesoMolinete = async (req, res) => {
     const { dni } = req.body;
 
     if (!dni) {
-      return res.status(400).json({ acceso: false, mensaje: 'Debe ingresar el número de DNI' });
+      return res.status(400).json({ acceso: false, mensaje: 'Ingrese su DNI' });
     }
 
     // A. Buscar al usuario
@@ -231,7 +231,7 @@ const validarAccesoMolinete = async (req, res) => {
     if (usuario.id_rol === 1 || usuario.id_rol === 2) {
       return res.json({
         acceso: true,
-        mensaje: 'Acceso concedido. ¡Bienvenid@ ${usuario.nombre}!'
+        mensaje: '¡Bienvenid@ ${usuario.nombre}!'
       });
     }
 
@@ -262,7 +262,7 @@ const validarAccesoMolinete = async (req, res) => {
 
     return res.json({
       acceso: true,
-      mensaje: 'Acceso concedido. ¡Buen entrenamiento, ${usuario.nombre}!'
+      mensaje: '¡Buen entrenamiento, ${usuario.nombre}!'
     });
 
   } catch (error) {
