@@ -1,0 +1,22 @@
+
+
+div{
+    display: flex;
+    flex-direction: row;
+}
+
+button{
+    margin-left: 10px;
+}
+
+body{
+    background-image: url(https://thumbs.dreamstime.com/b/gimnasio-24699087.jpg);
+      background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+a{
+    color: white;
+}
