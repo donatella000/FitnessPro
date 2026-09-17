@@ -11,12 +11,18 @@ button{
 
 body{
     background-image: url(https://thumbs.dreamstime.com/b/gimnasio-24699087.jpg);
-      background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 a{
+    color: green;
+}
+h3{
+    color: green;
+}
+h2{
     color: white;
 }
