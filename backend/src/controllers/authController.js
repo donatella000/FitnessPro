@@ -17,13 +17,15 @@ const registrar = async (req, res) => {
     celular,
     calle,
     numero,
+    fecha_nacimiento,
+    sexo,
     caracteristica,
     contacto_emergencia,
     id_suscripcion
   } = req.body;
 
   try {
-    // Validar campos obligatorios
+    // Validar campos obligatorios básicos
     if (!dni || !nombre || !apellido || !clave || !mail) {
       return res.status(400).json({
         mensaje: 'Los campos DNI, nombre, apellido, correo electrónico y clave son obligatorios.'
@@ -47,7 +49,7 @@ const registrar = async (req, res) => {
     const claveHasheada = await bcrypt.hash(clave, salt);
     const fecha_registro = new Date();
 
-    // Inserción en la tabla usuarios (asigna rol 3: alumno por defecto si no se indica)
+    // Inserción en la tabla usuarios incorporando fecha_nacimiento y sexo
     const [resultado] = await db.query(`
       INSERT INTO usuarios (
         dni,
@@ -60,12 +62,14 @@ const registrar = async (req, res) => {
         celular,
         calle,
         numero,
+        fecha_nacimiento,
+        sexo,
         fecha_registro,
         caracteristica,
         contacto_emergencia,
         puntos,
         id_suscripcion
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
     `, [
       dni,
       nombre,
@@ -77,6 +81,8 @@ const registrar = async (req, res) => {
       celular || 0,
       calle || '',
       numero || 0,
+      fecha_nacimiento || null,
+      sexo || null,
       fecha_registro,
       caracteristica || 0,
       contacto_emergencia || 0,
@@ -139,7 +145,7 @@ const login = async (req, res) => {
       });
     }
 
-    // Generar el token JWT con los datos del usuario
+    // Generar el token JWT con los datos de sesión del usuario
     const token = jwt.sign(
       {
         id_usuario: usuario.id_usuario,
