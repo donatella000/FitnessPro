@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+
+:root {
+  --bg: #01200e;
+  --bg-deep: #001208;
+  --neon: #0dff4a;
+  --neon-ink: #03170a;
+  --ink: #ffffff;
+  --danger: #ff8f85;
+  --font: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --nav-h: 84px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 3px;
+}
+
+/* Botón pill verde, usado en el hero y en el modal de acceso */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 192px;
+  height: 44px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--neon);
+  color: var(--neon-ink);
+  font: 700 0.75rem/1 var(--font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.btn-pill:hover {
+  box-shadow: 0 0 26px rgba(13, 255, 74, 0.55);
+}
+
+.btn-pill:active {
+  transform: translateY(1px);
+}
+
+.btn-pill:disabled {
+  opacity: 0.6;
+  cursor: progress;
+  box-shadow: none;
+}

@@ -1,0 +1,128 @@
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: calc(var(--nav-h) + 40px) clamp(24px, 6vw, 96px) 96px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 32px;
+}
+
+.hero__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero__kicker {
+  margin: 0 0 clamp(36px, 7vh, 72px);
+  color: var(--neon);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hero__title {
+  margin: 0 0 clamp(36px, 8vh, 80px);
+  font-size: clamp(2.1rem, 4.4vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.hero__greeting {
+  margin: -32px 0 24px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+}
+
+/* Círculo con resplandor + aro fino, como en el diseño */
+.hero__emblem {
+  width: min(100%, 460px);
+  aspect-ratio: 1;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    #19ff57 0%,
+    #10d640 35%,
+    #087a2c 62%,
+    rgba(1, 32, 14, 0) 100%
+  );
+}
+
+.hero__ring {
+  width: 68%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+}
+
+.hero__social {
+  position: absolute;
+  right: clamp(20px, 3vw, 40px);
+  bottom: 28px;
+  display: flex;
+  gap: 16px;
+}
+
+.hero__social a {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #fff;
+  transition: color 0.15s ease;
+}
+
+.hero__social a:hover {
+  color: var(--neon);
+}
+
+.hero__social svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+.hero__social .dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+.placeholder {
+  min-height: 60vh;
+  padding: 48px clamp(24px, 6vw, 96px);
+  scroll-margin-top: var(--nav-h);
+  background: var(--bg);
+}
+
+.placeholder h2 {
+  margin: 0 0 12px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.placeholder p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding-bottom: 110px;
+  }
+
+  .hero__emblem {
+    width: min(86%, 340px);
+  }
+}

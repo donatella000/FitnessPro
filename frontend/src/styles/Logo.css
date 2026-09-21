@@ -1,0 +1,24 @@
+.logo {
+  container-type: inline-size;
+  width: 62%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.logo__word {
+  margin-top: -0.2em;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15.5cqw;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
