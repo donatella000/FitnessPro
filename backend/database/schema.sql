@@ -147,6 +147,22 @@ ON DUPLICATE KEY UPDATE descripcion = nuevos_valores.descripcion;
 
 SELECT * FROM rol;
 
-INSERT INTO usuarios (dni, nombre, apellido, password_hash, id_rol, mail, fecha_registro)
-VALUES (11111111, 'Admin', 'FitnessPro', '$2a$12$g/Ee8Hm1g1/5spm2V733euokwUNVkOYqLvX8YPCcYBIQohj79L5KO', 1, 'fitnesspro.pps@gmail.com', CURDATE())
-ON DUPLICATE KEY UPDATE mail = VALUES(mail);
+INSERT INTO usuarios (
+    dni, 
+    nombre, 
+    apellido, 
+    password_hash, 
+    id_rol, 
+    mail, 
+    fecha_registro
+) 
+VALUES (
+    11111111, 
+    'Admin', 
+    'FitnessPro', 
+    '$2a$10$rqHJJTHsxMbtX/5ZjG1mFuWyYbUDW1PLbfwQRN0uChwes38c/0m3e', 
+    1, 
+    'fitnesspro.pps@gmail.com', 
+    CURDATE()
+) AS nuevo_admin
+ON DUPLICATE KEY UPDATE mail = nuevo_admin.mail;
