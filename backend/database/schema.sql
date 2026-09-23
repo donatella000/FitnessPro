@@ -41,31 +41,27 @@ CREATE TABLE suscripcion (
 );
 
 CREATE TABLE usuarios (
-	id_usuario INT PRIMARY KEY AUTO_INCREMENT,
+    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
     dni INT NOT NULL UNIQUE,
-    nombre VARCHAR (50) NOT NULL,
-    apellido VARCHAR (50) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL, 
+    nombre VARCHAR(50) NOT NULL,
+    apellido VARCHAR(50) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     id_rol INT NOT NULL,
-	mail VARCHAR (100) NOT NULL UNIQUE,
-    caracteristica_cel INT NOT NULL,
-    celular INT NOT NULL,
-    calle VARCHAR (50) NOT NULL,
-    numero INT NOT NULL,
-    calle VARCHAR(100),
-    numero INT,
+    mail VARCHAR(100) NOT NULL UNIQUE,
+    caracteristica_cel INT NULL,
+    celular INT NULL,
+    calle VARCHAR(50) NULL,
+    numero INT NULL,
     fecha_nacimiento DATE NULL,
     sexo ENUM('M', 'F', 'Otro') NULL,
-    fecha_registro DATETIME NOT NULL,
     fecha_registro DATE NOT NULL,
-    caracteristica INT NOT NULL,
-    contacto_emergencia INT NOT NULL,
+    caracteristica INT NULL,
+    contacto_emergencia INT NULL,
     puntos INT NOT NULL DEFAULT 0,
     id_suscripcion INT NULL,
     FOREIGN KEY (id_rol) REFERENCES rol (id_rol),
     FOREIGN KEY (id_suscripcion) REFERENCES suscripcion (id_suscripcion)
-
-);    
+);
 
 CREATE TABLE ejercicios(
 	id_ejercicios INT PRIMARY KEY AUTO_INCREMENT,
