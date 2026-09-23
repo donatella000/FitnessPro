@@ -107,8 +107,13 @@ const registrar = async (req, res) => {
 const login = async (req, res) => {
   const { mail, clave } = req.body;
 
+  console.log('\n--- 🔍 INTENTO DE LOGIN ---');
+  console.log('1. Mail recibido:', mail);
+  console.log('2. Clave recibida:', clave);
+
   try {
     if (!mail || !clave) {
+      console.log('❌ Error: Falta mail o clave en la petición');
       return res.status(400).json({
         mensaje: 'Debe ingresar el correo electrónico y la contraseña.'
       });
@@ -129,17 +134,25 @@ const login = async (req, res) => {
       WHERE u.mail = ?
     `, [mail]);
 
+    console.log('3. Usuarios encontrados en BD:', usuarios.length);
+
     if (usuarios.length === 0) {
+      console.log('❌ Motivo de fallo: No se encontró ningún usuario con ese mail o falló el JOIN con la tabla rol.');
       return res.status(401).json({
         mensaje: 'Correo electrónico o contraseña incorrectos.'
       });
     }
 
     const usuario = usuarios[0];
+    console.log('4. Usuario encontrado:', usuario.mail, '| Rol:', usuario.rol_nombre, `(ID: ${usuario.id_rol})`);
+    console.log('5. Hash guardado en BD:', usuario.password_hash);
 
     // Comparar la contraseña provista con el hash en MySQL
     const passwordValido = await bcrypt.compare(clave, usuario.password_hash);
+    console.log('6. ¿Coincide la contraseña según bcrypt?:', passwordValido);
+
     if (!passwordValido) {
+      console.log('❌ Motivo de fallo: La contraseña ingresada no coincide con el hash guardado.');
       return res.status(401).json({
         mensaje: 'Correo electrónico o contraseña incorrectos.'
       });
@@ -156,6 +169,8 @@ const login = async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    console.log('✅ ¡Login exitoso! Token emitido.');
+
     return res.json({
       mensaje: '¡Inicio de sesión exitoso!',
       token,
@@ -169,7 +184,7 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error al iniciar sesión:', error);
+    console.error('❌ Error interno en login:', error);
     return res.status(500).json({
       mensaje: 'Error interno del servidor al procesar el inicio de sesión.'
     });
