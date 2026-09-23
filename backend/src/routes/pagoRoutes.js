@@ -5,26 +5,41 @@ const {
   listarPagos,
   obtenerPagoPorId,
   actualizarPago,
-  eliminarPago
+  eliminarPago,
+  crearPreferenciaPago,
+  recibirWebhook
 } = require('../controllers/pagoController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
-// Todas las rutas de pagos requieren estar autenticado
+// ==========================================
+// 1. RUTA PÚBLICA DE WEBHOOK
+// ==========================================
+// Mercado Pago notifica aquí sin token de sesión
+router.post('/webhook', recibirWebhook);
+
+// A partir de acá todas las rutas requieren estar autenticado
 router.use(verificarToken);
 
-// 1. Listar pagos (Alumnos ven los propios, Admin y Profesor ven todos)
-router.get('/', listarPagos);
+// ==========================================
+// 2. RUTAS DE CHECKOUT MERCADO PAGO
+// ==========================================
+// El socio logueado genera el link para abonar su suscripción
+router.post('/crear-preferencia', crearPreferenciaPago);
 
-// 2. Obtener un recibo/pago puntual por ID
+// ==========================================
+// 3. CONSULTAS Y GESTIÓN DE PAGOS
+// ==========================================
+// Alumnos ven solo sus pagos; Profesores y Admins ven el historial completo
+router.get('/', listarPagos);
 router.get('/:id', obtenerPagoPorId);
 
-// 3. Registrar un nuevo pago (Admin: 1 y Profesor: 2)
+// Cobro manual por mostrador/efectivo (Admin y Profesor)
 router.post('/', permitirRoles(1, 2), registrarPago);
 
-// 4. Modificar comprobante de pago (Admin: 1 y Profesor: 2)
+// Modificar datos de comprobante (Admin y Profesor)
 router.put('/:id', permitirRoles(1, 2), actualizarPago);
 
-// 5. Eliminar comprobante de pago (Exclusivo Administrador: 1)
+// Eliminar comprobante de pago (Exclusivo Administrador)
 router.delete('/:id', permitirRoles(1), eliminarPago);
 
 module.exports = router;
