@@ -148,21 +148,26 @@ ON DUPLICATE KEY UPDATE descripcion = nuevos_valores.descripcion;
 SELECT * FROM rol;
 
 INSERT INTO usuarios (
-    dni, 
-    nombre, 
-    apellido, 
-    password_hash, 
-    id_rol, 
-    mail, 
+    dni,
+    nombre,
+    apellido,
+    password_hash,
+    id_rol,
+    mail,
     fecha_registro
-) 
+)
 VALUES (
-    11111111, 
-    'Admin', 
-    'FitnessPro', 
-    '$2a$10$rqHJJTHsxMbtX/5ZjG1mFuWyYbUDW1PLbfwQRN0uChwes38c/0m3e', 
-    1, 
-    'fitnesspro.pps@gmail.com', 
+    11111111,
+    'Admin',
+    'FitnessPro',
+    '$2b$10$zTwA8fhPqZtDhfIwgG77e.5b/FfsucIyuN2/ANPZAsKOGQzqbzRrm',
+    1,
+    'fitnesspro.pps@gmail.com',
     CURDATE()
 ) AS nuevo_admin
-ON DUPLICATE KEY UPDATE mail = nuevo_admin.mail;
+ON DUPLICATE KEY UPDATE password_hash = nuevo_admin.password_hash;
+ 
+-- Verificación: el hash debe tener 60 caracteres
+SELECT id_usuario, mail, id_rol, LENGTH(password_hash) AS largo_hash
+FROM usuarios
+WHERE mail = 'fitnesspro.pps@gmail.com';
