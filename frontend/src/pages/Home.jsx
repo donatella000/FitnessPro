@@ -2,6 +2,9 @@ import { useCallback, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Logo from '../components/Logo';
 import AuthModal from '../components/AuthModal';
+import ActivitiesSection from '../components/ActivitiesSection';
+import AboutSection from '../components/AboutSection';
+import TeamSection from '../components/TeamSection';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Home.css';
 
@@ -68,15 +71,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Secciones de ejemplo para que los links del navbar tengan destino */}
-        <section id="actividades" className="placeholder">
-          <h2>Actividades</h2>
-          <p>Próximamente.</p>
-        </section>
-        <section id="quienes-somos" className="placeholder">
-          <h2>Quiénes somos</h2>
-          <p>Próximamente.</p>
-        </section>
+        <ActivitiesSection />
+        <AboutSection />
+        <TeamSection />
+
+        {/* Sección de ejemplo para que el link "Ubicación y contacto" del navbar tenga destino */}
         <section id="contacto" className="placeholder">
           <h2>Ubicación y contacto</h2>
           <p>Próximamente.</p>
