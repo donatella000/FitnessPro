@@ -171,3 +171,15 @@ ON DUPLICATE KEY UPDATE password_hash = nuevo_admin.password_hash;
 SELECT id_usuario, mail, id_rol, LENGTH(password_hash) AS largo_hash
 FROM usuarios
 WHERE mail = 'fitnesspro.pps@gmail.com';
+
+USE gimnasio;
+
+CREATE TABLE asistencias (
+  id_asistencia INT PRIMARY KEY AUTO_INCREMENT,
+  id_usuario INT NOT NULL,
+  id_horario INT NOT NULL,
+  fecha DATE NOT NULL,
+  hora TIME NOT NULL,
+  FOREIGN KEY (id_usuario) REFERENCES usuarios (id_usuario),
+  FOREIGN KEY (id_horario) REFERENCES horarios_clase (id_horario)
+);
