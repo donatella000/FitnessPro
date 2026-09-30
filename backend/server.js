@@ -12,6 +12,7 @@ const rutinaRoutes = require('./src/routes/rutinaRoutes');
 const suscripcionRoutes = require('./src/routes/suscripcionRoutes');
 const pagoRoutes = require('./src/routes/pagoRoutes');
 const puntosRoutes = require('./src/routes/puntosRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes'); // NUEVO
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,7 @@ app.use('/api/rutinas', rutinaRoutes);
 app.use('/api/suscripciones', suscripcionRoutes);
 app.use('/api/pagos', pagoRoutes);
 app.use('/api/puntos', puntosRoutes);
+app.use('/api/dashboard', dashboardRoutes); // NUEVO
 
 // Ruta de prueba de salud de la API
 app.get('/api/saludo', (req, res) => {
@@ -42,7 +44,7 @@ const iniciarServidor = async () => {
     console.log('✅ Conexión exitosa a la base de datos MySQL.');
 
     app.listen(PORT, () => {
-      console.log('🚀 Servidor corriendo en el puerto http://localhost:${PORT}');
+      console.log(`🚀 Servidor corriendo en el puerto http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error('❌ Error al conectar con la base de datos MySQL:', error.message);
