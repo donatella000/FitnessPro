@@ -1,0 +1,142 @@
+.team {
+  padding: 48px clamp(20px, 6vw, 96px) 72px;
+  scroll-margin-top: var(--nav-h);
+  background: var(--neon);
+  color: var(--neon-ink);
+}
+
+.team__title {
+  margin: 0 0 20px;
+  font-size: clamp(1.4rem, 2.6vw, 1.8rem);
+  font-weight: 700;
+  text-align: left;
+}
+
+.team__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.team__tabs button {
+  height: 38px;
+  padding: 0 18px;
+  border: 1px solid rgba(3, 23, 10, 0.4);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--neon-ink);
+  font: 700 0.75rem/1 var(--font);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.team__tabs button.is-active {
+  background: var(--neon-ink);
+  color: var(--neon);
+}
+
+.team__panel {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px clamp(16px, 4vw, 40px) 36px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 18px;
+}
+
+.team__activity {
+  margin: 0 0 24px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.team__profs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 3vw, 28px);
+  margin-bottom: 28px;
+}
+
+.team__profcard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Forma "lápida" con tope redondeado */
+.team__tombstone {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  place-items: center;
+  padding: 14%;
+  background: #d9d9d9;
+  border-radius: 999px 999px 12px 12px;
+}
+
+.team__tombstone svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--neon-ink);
+}
+
+.team__profname {
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.team__toggle {
+  display: flex;
+  margin: 0 auto;
+  background: var(--neon-ink);
+  color: var(--neon);
+}
+
+.team__toggle:hover {
+  box-shadow: 0 0 20px rgba(3, 23, 10, 0.45);
+}
+
+.team__schedule {
+  margin-top: 24px;
+  overflow-x: auto;
+}
+
+.team__schedule table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+
+.team__schedule th,
+.team__schedule td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(3, 23, 10, 0.12);
+}
+
+.team__schedule thead th {
+  background: var(--neon-ink);
+  color: var(--neon);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.team__schedule tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+@media (max-width: 560px) {
+  .team__profs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
