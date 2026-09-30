@@ -1,4 +1,4 @@
-import '../styles/Quienessomos.css';
+import '../styles/AboutSection.css';
 
 export default function AboutSection() {
   return (
