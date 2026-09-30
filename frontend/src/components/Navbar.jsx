@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import '../styles/Navbar.css';
 
-// Cada href apunta a una sección de la página de inicio.
-// Si más adelante usás react-router, cambiá los <a> por <Link to="/actividades">.
+// Cada href apunta a una sección de la Home. El prefijo "/" hace que funcionen
+// también parado en /dashboard: el navegador hace una carga completa a "/#seccion".
 const LINKS = [
-  { href: '#inicio', label: 'Home' },
-  { href: '#actividades', label: 'Actividades' },
-  { href: '#quienes-somos', label: 'Quiénes somos' },
-  { href: '#contacto', label: 'Ubicación y contacto' },
+  { href: '/#inicio', label: 'Home' },
+  { href: '/#actividades', label: 'Actividades' },
+  { href: '/#quienes-somos', label: 'Quiénes somos' },
+  { href: '/#contacto', label: 'Ubicación y contacto' },
 ];
 
 export default function Navbar() {
@@ -15,7 +15,7 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <a className="navbar__brand" href="#inicio" aria-label="FitnessPro, ir al inicio">
+      <a className="navbar__brand" href="/#inicio" aria-label="FitnessPro, ir al inicio">
         <svg className="navbar__mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
           <g fill="currentColor">
             <rect x="42" y="0" width="16" height="100" />

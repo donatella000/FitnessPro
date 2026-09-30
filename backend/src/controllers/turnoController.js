@@ -199,6 +199,19 @@ const actualizarAsistencia = async (req, res) => {
       return res.status(404).json({ mensaje: 'Turno no encontrado' });
     }
 
+    // NUEVO: si se marca presente, sumamos un registro en "asistencias" con la fecha
+    // de hoy. Es lo que permite calcular "turnos restantes" del mes sin romper nada
+    // de lo que ya tenías (turnos.asistio sigue funcionando igual que antes).
+    if (Number(asistio) === 1) {
+      const [turnos] = await db.query('SELECT id_usuario, id_horario FROM turnos WHERE id_turno = ?', [id]);
+      if (turnos.length > 0) {
+        await db.query(
+          'INSERT INTO asistencias (id_usuario, id_horario, fecha, hora) VALUES (?, ?, CURDATE(), CURTIME())',
+          [turnos[0].id_usuario, turnos[0].id_horario]
+        );
+      }
+    }
+
     return res.json({ mensaje: 'Asistencia actualizada correctamente' });
   } catch (error) {
     console.error('Error al actualizar asistencia:', error);
@@ -231,7 +244,7 @@ const validarAccesoMolinete = async (req, res) => {
     if (usuario.id_rol === 1 || usuario.id_rol === 2) {
       return res.json({
         acceso: true,
-        mensaje: '¡Bienvenid@ ${usuario.nombre}!'
+        mensaje: `¡Bienvenid@ ${usuario.nombre}!`
       });
     }
 
@@ -239,7 +252,7 @@ const validarAccesoMolinete = async (req, res) => {
     const diaActual = obtenerDiaSemanaEspanol();
 
     const [turnosValidos] = await db.query(`
-      SELECT t.id_turno, h.hora_inicio, h.hora_fin
+      SELECT t.id_turno, t.id_horario, h.hora_inicio, h.hora_fin
       FROM turnos t
       INNER JOIN horarios_clase h ON t.id_horario = h.id_horario
       WHERE t.id_usuario = ?
@@ -251,7 +264,7 @@ const validarAccesoMolinete = async (req, res) => {
     if (turnosValidos.length === 0) {
       return res.status(403).json({
         acceso: false,
-        mensaje: 'Acceso denegado: No tenés un turno asignado para el día de hoy (${diaActual}) en este horario '
+        mensaje: `Acceso denegado: No tenés un turno asignado para el día de hoy (${diaActual}) en este horario`
       });
     }
 
@@ -260,9 +273,16 @@ const validarAccesoMolinete = async (req, res) => {
     // D. Registrar la asistencia del turno (sin alterar puntos automáticamente)
     await db.query('UPDATE turnos SET asistio = 1 WHERE id_turno = ?', [turno.id_turno]);
 
+    // NUEVO: una fila más en "asistencias", con la fecha de HOY. Esto es lo que
+    // hace que "turnos restantes" baje solo cada vez que alguien entra por el molinete.
+    await db.query(
+      'INSERT INTO asistencias (id_usuario, id_horario, fecha, hora) VALUES (?, ?, CURDATE(), CURTIME())',
+      [usuario.id_usuario, turno.id_horario]
+    );
+
     return res.json({
       acceso: true,
-      mensaje: '¡Buen entrenamiento, ${usuario.nombre}!'
+      mensaje: `¡Buen entrenamiento, ${usuario.nombre}!`
     });
 
   } catch (error) {

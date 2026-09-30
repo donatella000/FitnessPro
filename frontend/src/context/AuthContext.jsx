@@ -1,58 +1,95 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import api from '../services/api';
+import { API_URL } from '../config';
+
+/*
+ * Login y registro contra TU backend (controllers/auth.controller.js con
+ * registrar/login). Guardamos en localStorage el token JWT que devuelve el
+ * login y los datos públicos del usuario, para no perder la sesión al
+ * recargar la página.
+ *
+ * Rutas confirmadas contra tu authRoutes.js: POST /api/auth/login y POST /api/auth/registro.
+ */
+
+const LOGIN_PATH = '/auth/login';
+const REGISTER_PATH = '/auth/registro';
 
 const SESSION_KEY = 'fitnesspro_session';
 const TOKEN_KEY = 'fitnesspro_token';
 
-function readJSON(key, fallback) {
+function readSession() {
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
   } catch {
-    return fallback;
+    return null;
   }
+}
+
+async function callApi(path, body) {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    // Tu backend devuelve el error en "mensaje", no en "error".
+    throw new Error(data.mensaje || 'Ocurrió un error inesperado.');
+  }
+  return data;
+}
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => readJSON(SESSION_KEY, null));
+  const [user, setUser] = useState(readSession);
 
-  // Iniciar sesión real con el backend
-  const login = useCallback(async ({ email, password }) => {
-    try {
-      const response = await api.post('/auth/login', {
-        mail: email,
-        clave: password,
-      });
-
-      const { token, usuario } = response.data;
-
-      // Guardar token JWT y datos de sesión en localStorage
-      localStorage.setItem(TOKEN_KEY, token);
-      localStorage.setItem(SESSION_KEY, JSON.stringify(usuario));
-
-      setUser(usuario);
-      return usuario;
-    } catch (err) {
-      const mensaje =
-        err.response?.data?.mensaje ||
-        err.response?.data?.error ||
-        'Error al conectar con el servidor';
-      throw new Error(mensaje);
-    }
+  const startSession = useCallback((nextUser, token) => {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(nextUser));
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    setUser(nextUser);
   }, []);
 
-  // Cerrar sesión
+  const login = useCallback(
+    async ({ email, password }) => {
+      const { usuario, token } = await callApi(LOGIN_PATH, { mail: email, clave: password });
+      startSession(usuario, token);
+      return usuario;
+    },
+    [startSession]
+  );
+
+  // Tu endpoint de registro no devuelve el usuario ni un token: solo
+  // { mensaje, id_usuario }. Así que después de registrar, hacemos login
+  // automáticamente con las mismas credenciales para arrancar la sesión.
+  const register = useCallback(
+    async ({ nombre, apellido, dni, email, password, ...resto }) => {
+      await callApi(REGISTER_PATH, {
+        dni,
+        nombre,
+        apellido,
+        clave: password,
+        mail: email,
+        ...resto, // sexo, fecha_nacimiento, celular, etc., si en algún momento se piden
+      });
+      return login({ email, password });
+    },
+    [login]
+  );
+
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     setUser(null);
   }, []);
 
   const value = useMemo(
-    () => ({ user, login, logout }),
-    [user, login, logout]
+    () => ({ user, login, register, logout }),
+    [user, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
