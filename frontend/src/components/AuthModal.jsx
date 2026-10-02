@@ -19,6 +19,8 @@ export default function AuthModal({ open, onClose }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verPassword, setVerPassword] = useState(false);   // 👈 AGREGAR ESTA LÍNEA
+  const [verConfirmar, setVerConfirmar] = useState(false); // 👈 Y ESTA
 
   // Al abrir: volver al estado inicial
   useEffect(() => {
@@ -26,6 +28,8 @@ export default function AuthModal({ open, onClose }) {
       setMode('login');
       setForm(EMPTY_FORM);
       setError('');
+      setVerPassword(false);   // 👈 agregar
+      setVerConfirmar(false);  // 👈 agregar
     }
   }, [open]);
 
@@ -52,6 +56,8 @@ export default function AuthModal({ open, onClose }) {
     setMode(next);
     setForm(EMPTY_FORM);
     setError('');
+    setVerPassword(false);   // 👈 agregar
+    setVerConfirmar(false);  // 👈 agregar
   };
 
   const handleChange = (e) => {
