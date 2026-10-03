@@ -1,6 +1,8 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto'); // 👈 agregar esta línea
+const { enviarMailRecuperacion } = require('../config/mailer'); // 👈 y esta
 
 // ==========================================
 // 1. REGISTRO DE USUARIOS
@@ -191,7 +193,91 @@ const login = async (req, res) => {
   }
 };
 
+
+// ==========================================
+// 3. SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+// ==========================================
+const solicitarRecuperacion = async (req, res) => {
+  const { mail } = req.body;
+
+  try {
+    if (!mail) {
+      return res.status(400).json({ mensaje: 'Debe ingresar su correo electrónico.' });
+    }
+
+    const [usuarios] = await db.query('SELECT id_usuario FROM usuarios WHERE mail = ?', [mail]);
+
+    // Por seguridad, respondemos lo mismo exista o no el mail,
+    // así no revelamos qué correos están registrados.
+    if (usuarios.length === 0) {
+      return res.json({
+        mensaje: 'Si el correo existe en nuestro sistema, vas a recibir un mail con instrucciones.'
+      });
+    }
+
+    const usuario = usuarios[0];
+    const token = crypto.randomBytes(32).toString('hex');
+    const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await db.query(
+      'UPDATE usuarios SET reset_token = ?, reset_token_expira = ? WHERE id_usuario = ?',
+      [token, expira, usuario.id_usuario]
+    );
+
+    await enviarMailRecuperacion(mail, token);
+
+    return res.json({
+      mensaje: 'Si el correo existe en nuestro sistema, vas a recibir un mail con instrucciones.'
+    });
+  } catch (error) {
+    console.error('Error al solicitar recuperación:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+  }
+};
+
+// ==========================================
+// 4. RESTABLECER CONTRASEÑA CON TOKEN
+// ==========================================
+const restablecerPassword = async (req, res) => {
+  const { token, nuevaClave } = req.body;
+
+  try {
+    if (!token || !nuevaClave) {
+      return res.status(400).json({ mensaje: 'Faltan datos para restablecer la contraseña.' });
+    }
+
+    if (nuevaClave.length < 6) {
+      return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
+    }
+
+    const [usuarios] = await db.query(
+      'SELECT id_usuario FROM usuarios WHERE reset_token = ? AND reset_token_expira > NOW()',
+      [token]
+    );
+
+    if (usuarios.length === 0) {
+      return res.status(400).json({ mensaje: 'El link es inválido o ya expiró. Solicitá uno nuevo.' });
+    }
+
+    const usuario = usuarios[0];
+    const salt = await bcrypt.genSalt(10);
+    const claveHasheada = await bcrypt.hash(nuevaClave, salt);
+
+    await db.query(
+      'UPDATE usuarios SET password_hash = ?, reset_token = NULL, reset_token_expira = NULL WHERE id_usuario = ?',
+      [claveHasheada, usuario.id_usuario]
+    );
+
+    return res.json({ mensaje: 'Contraseña actualizada correctamente. Ya podés iniciar sesión.' });
+  } catch (error) {
+    console.error('Error al restablecer contraseña:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+  }
+};
+
 module.exports = {
   registrar,
-  login
+  login,
+  solicitarRecuperacion,  // 👈 agregar
+  restablecerPassword     // 👈 agregar
 };

@@ -12,6 +12,8 @@ import { API_URL } from '../config';
 
 const LOGIN_PATH = '/auth/login';
 const REGISTER_PATH = '/auth/registro';
+const OLVIDE_PATH = '/auth/olvide-password';      // 👈 agregar
+const RESTABLECER_PATH = '/auth/restablecer-password'; // 👈 agregar
 
 const SESSION_KEY = 'fitnesspro_session';
 const TOKEN_KEY = 'fitnesspro_token';
@@ -81,16 +83,26 @@ export function AuthProvider({ children }) {
     [login]
   );
 
+  const solicitarRecuperacion = useCallback(async ({ email }) => {
+  const data = await callApi(OLVIDE_PATH, { mail: email });
+  return data.mensaje;
+}, []);
+
+const restablecerPassword = useCallback(async ({ token, nuevaClave }) => {
+  const data = await callApi(RESTABLECER_PATH, { token, nuevaClave });
+  return data.mensaje;
+}, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(TOKEN_KEY);
     setUser(null);
   }, []);
 
-  const value = useMemo(
-    () => ({ user, login, register, logout }),
-    [user, login, register, logout]
-  );
+ const value = useMemo(
+  () => ({ user, login, register, logout, solicitarRecuperacion, restablecerPassword }),
+  [user, login, register, logout, solicitarRecuperacion, restablecerPassword]
+);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

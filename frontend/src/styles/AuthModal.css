@@ -145,3 +145,71 @@
   width: 100%;
   margin-top: 6px;
 }
+
+
+.auth__password-wrap {
+  position: relative;
+}
+
+.auth__password-wrap input {
+  width: 100%;
+  padding-right: 42px; /* lugar para el ícono */
+}
+
+.auth__toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.auth__toggle-password:hover {
+  opacity: 1;
+}
+
+.auth__toggle-password svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.auth__link {
+  background: none;
+  border: none;
+  color: #1dd75b;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 0;
+  text-align: center;
+  width: 100%;
+}
+
+.auth__link:hover {
+  text-decoration: underline;
+}
+
+.auth__link--forgot {
+  text-align: right;
+  margin-top: -8px;
+}
+
+.auth__hint {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.auth__success {
+  color: #1dd75b;
+  font-size: 0.9rem;
+}
