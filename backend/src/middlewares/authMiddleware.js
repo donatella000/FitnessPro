@@ -22,7 +22,7 @@ const verificarToken = (req, res, next) => {
     req.usuario = usuarioDecodificado;
     next();
   } catch (error) {
-    return res.status(403).json({
+    return res.status(401).json({
       mensaje: 'Token inválido o expirado. Por favor, iniciá sesión nuevamente.'
     });
   }

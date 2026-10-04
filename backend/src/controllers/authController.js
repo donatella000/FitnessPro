@@ -1,40 +1,46 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto'); // 👈 agregar esta línea
-const { enviarMailRecuperacion } = require('../config/mailer'); // 👈 y esta
+const crypto = require('crypto');
+const { enviarMailRecuperacion } = require('../config/mailer');
+
+const LARGO_MINIMO_CLAVE = 6;
+const ROL_ALUMNO = 3;
 
 // ==========================================
-// 1. REGISTRO DE USUARIOS
+// 1. AUTOREGISTRO DE ALUMNOS
 // ==========================================
+// El rol siempre es Alumno (3). Los profesores y administradores
+// se crean desde el dashboard, nunca desde el registro público.
 const registrar = async (req, res) => {
   const {
     dni,
     nombre,
     apellido,
     clave,
-    id_rol,
     mail,
-    caracteristica_cel,
-    celular,
+    telefono,
     calle,
     numero,
     fecha_nacimiento,
     sexo,
-    caracteristica,
-    contacto_emergencia,
-    id_suscripcion
+    contacto_emergencia_nombre,
+    contacto_emergencia_tel
   } = req.body;
 
   try {
-    // Validar campos obligatorios básicos
     if (!dni || !nombre || !apellido || !clave || !mail) {
       return res.status(400).json({
         mensaje: 'Los campos DNI, nombre, apellido, correo electrónico y clave son obligatorios.'
       });
     }
 
-    // Verificar si el correo o el DNI ya se encuentran registrados
+    if (clave.length < LARGO_MINIMO_CLAVE) {
+      return res.status(400).json({
+        mensaje: `La contraseña debe tener al menos ${LARGO_MINIMO_CLAVE} caracteres.`
+      });
+    }
+
     const [usuarioExistente] = await db.query(
       'SELECT id_usuario FROM usuarios WHERE mail = ? OR dni = ?',
       [mail, dni]
@@ -46,49 +52,30 @@ const registrar = async (req, res) => {
       });
     }
 
-    // Hashear la contraseña antes de persistir
-    const salt = await bcrypt.genSalt(10);
-    const claveHasheada = await bcrypt.hash(clave, salt);
-    const fecha_registro = new Date();
+    const claveHasheada = await bcrypt.hash(clave, 10);
 
-    // Inserción en la tabla usuarios incorporando fecha_nacimiento y sexo
+    // Los campos opcionales se guardan como NULL si no vienen.
+    // fecha_registro y puntos toman su valor por defecto desde la base.
     const [resultado] = await db.query(`
       INSERT INTO usuarios (
-        dni,
-        nombre,
-        apellido,
-        password_hash,
-        id_rol,
-        mail,
-        caracteristica_cel,
-        celular,
-        calle,
-        numero,
-        fecha_nacimiento,
-        sexo,
-        fecha_registro,
-        caracteristica,
-        contacto_emergencia,
-        puntos,
-        id_suscripcion
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+        dni, nombre, apellido, mail, password_hash, id_rol,
+        telefono, calle, numero, fecha_nacimiento, sexo,
+        contacto_emergencia_nombre, contacto_emergencia_tel
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       dni,
       nombre,
       apellido,
-      claveHasheada,
-      id_rol || 3,
       mail,
-      caracteristica_cel || 0,
-      celular || 0,
-      calle || '',
-      numero || 0,
+      claveHasheada,
+      ROL_ALUMNO,
+      telefono || null,
+      calle || null,
+      numero || null,
       fecha_nacimiento || null,
       sexo || null,
-      fecha_registro,
-      caracteristica || 0,
-      contacto_emergencia || 0,
-      id_suscripcion || null
+      contacto_emergencia_nombre || null,
+      contacto_emergencia_tel || null
     ]);
 
     return res.status(201).json({
@@ -109,58 +96,50 @@ const registrar = async (req, res) => {
 const login = async (req, res) => {
   const { mail, clave } = req.body;
 
-  console.log('\n--- 🔍 INTENTO DE LOGIN ---');
-  console.log('1. Mail recibido:', mail);
-  console.log('2. Clave recibida:', clave);
-
   try {
     if (!mail || !clave) {
-      console.log('❌ Error: Falta mail o clave en la petición');
       return res.status(400).json({
         mensaje: 'Debe ingresar el correo electrónico y la contraseña.'
       });
     }
 
-    // Buscar al usuario y obtener la descripción de su rol
     const [usuarios] = await db.query(`
-      SELECT 
+      SELECT
         u.id_usuario,
         u.nombre,
         u.apellido,
         u.mail,
         u.password_hash,
         u.id_rol,
+        u.debe_cambiar_password,
+        u.activo,
         r.descripcion AS rol_nombre
       FROM usuarios u
       INNER JOIN rol r ON u.id_rol = r.id_rol
       WHERE u.mail = ?
     `, [mail]);
 
-    console.log('3. Usuarios encontrados en BD:', usuarios.length);
-
     if (usuarios.length === 0) {
-      console.log('❌ Motivo de fallo: No se encontró ningún usuario con ese mail o falló el JOIN con la tabla rol.');
       return res.status(401).json({
         mensaje: 'Correo electrónico o contraseña incorrectos.'
       });
     }
 
     const usuario = usuarios[0];
-    console.log('4. Usuario encontrado:', usuario.mail, '| Rol:', usuario.rol_nombre, `(ID: ${usuario.id_rol})`);
-    console.log('5. Hash guardado en BD:', usuario.password_hash);
 
-    // Comparar la contraseña provista con el hash en MySQL
     const passwordValido = await bcrypt.compare(clave, usuario.password_hash);
-    console.log('6. ¿Coincide la contraseña según bcrypt?:', passwordValido);
-
     if (!passwordValido) {
-      console.log('❌ Motivo de fallo: La contraseña ingresada no coincide con el hash guardado.');
       return res.status(401).json({
         mensaje: 'Correo electrónico o contraseña incorrectos.'
       });
     }
 
-    // Generar el token JWT con los datos de sesión del usuario
+    if (!usuario.activo) {
+      return res.status(403).json({
+        mensaje: 'Tu usuario está dado de baja. Comunicate con el gimnasio.'
+      });
+    }
+
     const token = jwt.sign(
       {
         id_usuario: usuario.id_usuario,
@@ -171,8 +150,6 @@ const login = async (req, res) => {
       { expiresIn: '8h' }
     );
 
-    console.log('✅ ¡Login exitoso! Token emitido.');
-
     return res.json({
       mensaje: '¡Inicio de sesión exitoso!',
       token,
@@ -182,53 +159,54 @@ const login = async (req, res) => {
         apellido: usuario.apellido,
         mail: usuario.mail,
         id_rol: usuario.id_rol,
-        rol: usuario.rol_nombre
+        rol: usuario.rol_nombre,
+        // Si es true, el frontend tiene que llevarlo a la pantalla de cambio de contraseña
+        debe_cambiar_password: Boolean(usuario.debe_cambiar_password)
       }
     });
   } catch (error) {
-    console.error('❌ Error interno en login:', error);
+    console.error('Error interno en login:', error);
     return res.status(500).json({
       mensaje: 'Error interno del servidor al procesar el inicio de sesión.'
     });
   }
 };
 
-
 // ==========================================
 // 3. SOLICITAR RECUPERACIÓN DE CONTRASEÑA
 // ==========================================
 const solicitarRecuperacion = async (req, res) => {
   const { mail } = req.body;
+  const respuestaGenerica = {
+    mensaje: 'Si el correo existe en nuestro sistema, vas a recibir un mail con instrucciones.'
+  };
 
   try {
     if (!mail) {
       return res.status(400).json({ mensaje: 'Debe ingresar su correo electrónico.' });
     }
 
-    const [usuarios] = await db.query('SELECT id_usuario FROM usuarios WHERE mail = ?', [mail]);
+    const [usuarios] = await db.query(
+      'SELECT id_usuario FROM usuarios WHERE mail = ? AND activo = 1',
+      [mail]
+    );
 
-    // Por seguridad, respondemos lo mismo exista o no el mail,
-    // así no revelamos qué correos están registrados.
+    // Por seguridad, se responde lo mismo exista o no el mail
     if (usuarios.length === 0) {
-      return res.json({
-        mensaje: 'Si el correo existe en nuestro sistema, vas a recibir un mail con instrucciones.'
-      });
+      return res.json(respuestaGenerica);
     }
 
-    const usuario = usuarios[0];
     const token = crypto.randomBytes(32).toString('hex');
     const expira = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
     await db.query(
       'UPDATE usuarios SET reset_token = ?, reset_token_expira = ? WHERE id_usuario = ?',
-      [token, expira, usuario.id_usuario]
+      [token, expira, usuarios[0].id_usuario]
     );
 
     await enviarMailRecuperacion(mail, token);
 
-    return res.json({
-      mensaje: 'Si el correo existe en nuestro sistema, vas a recibir un mail con instrucciones.'
-    });
+    return res.json(respuestaGenerica);
   } catch (error) {
     console.error('Error al solicitar recuperación:', error);
     return res.status(500).json({ mensaje: 'Error interno del servidor.' });
@@ -236,7 +214,7 @@ const solicitarRecuperacion = async (req, res) => {
 };
 
 // ==========================================
-// 4. RESTABLECER CONTRASEÑA CON TOKEN
+// 4. RESTABLECER CONTRASEÑA CON TOKEN DEL MAIL
 // ==========================================
 const restablecerPassword = async (req, res) => {
   const { token, nuevaClave } = req.body;
@@ -246,8 +224,10 @@ const restablecerPassword = async (req, res) => {
       return res.status(400).json({ mensaje: 'Faltan datos para restablecer la contraseña.' });
     }
 
-    if (nuevaClave.length < 6) {
-      return res.status(400).json({ mensaje: 'La contraseña debe tener al menos 6 caracteres.' });
+    if (nuevaClave.length < LARGO_MINIMO_CLAVE) {
+      return res.status(400).json({
+        mensaje: `La contraseña debe tener al menos ${LARGO_MINIMO_CLAVE} caracteres.`
+      });
     }
 
     const [usuarios] = await db.query(
@@ -259,14 +239,16 @@ const restablecerPassword = async (req, res) => {
       return res.status(400).json({ mensaje: 'El link es inválido o ya expiró. Solicitá uno nuevo.' });
     }
 
-    const usuario = usuarios[0];
-    const salt = await bcrypt.genSalt(10);
-    const claveHasheada = await bcrypt.hash(nuevaClave, salt);
+    const claveHasheada = await bcrypt.hash(nuevaClave, 10);
 
-    await db.query(
-      'UPDATE usuarios SET password_hash = ?, reset_token = NULL, reset_token_expira = NULL WHERE id_usuario = ?',
-      [claveHasheada, usuario.id_usuario]
-    );
+    await db.query(`
+      UPDATE usuarios
+      SET password_hash = ?,
+          reset_token = NULL,
+          reset_token_expira = NULL,
+          debe_cambiar_password = 0
+      WHERE id_usuario = ?
+    `, [claveHasheada, usuarios[0].id_usuario]);
 
     return res.json({ mensaje: 'Contraseña actualizada correctamente. Ya podés iniciar sesión.' });
   } catch (error) {
@@ -275,9 +257,62 @@ const restablecerPassword = async (req, res) => {
   }
 };
 
+// ==========================================
+// 5. CAMBIAR CONTRASEÑA ESTANDO LOGUEADO
+// ==========================================
+// Se usa en el primer ingreso de un alumno dado de alta por el admin/profe
+// (contraseña = DNI) y cuando cualquier usuario quiera cambiarla desde su perfil.
+const cambiarPassword = async (req, res) => {
+  const { claveActual, nuevaClave } = req.body;
+  const { id_usuario } = req.usuario; // viene del token (verificarToken)
+
+  try {
+    if (!claveActual || !nuevaClave) {
+      return res.status(400).json({ mensaje: 'Debe ingresar la contraseña actual y la nueva.' });
+    }
+
+    if (nuevaClave.length < LARGO_MINIMO_CLAVE) {
+      return res.status(400).json({
+        mensaje: `La contraseña debe tener al menos ${LARGO_MINIMO_CLAVE} caracteres.`
+      });
+    }
+
+    if (claveActual === nuevaClave) {
+      return res.status(400).json({ mensaje: 'La nueva contraseña debe ser distinta de la actual.' });
+    }
+
+    const [usuarios] = await db.query(
+      'SELECT password_hash FROM usuarios WHERE id_usuario = ?',
+      [id_usuario]
+    );
+
+    if (usuarios.length === 0) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
+    }
+
+    const passwordValido = await bcrypt.compare(claveActual, usuarios[0].password_hash);
+    if (!passwordValido) {
+      return res.status(401).json({ mensaje: 'La contraseña actual es incorrecta.' });
+    }
+
+    const claveHasheada = await bcrypt.hash(nuevaClave, 10);
+
+    await db.query(
+      'UPDATE usuarios SET password_hash = ?, debe_cambiar_password = 0 WHERE id_usuario = ?',
+      [claveHasheada, id_usuario]
+    );
+
+    return res.json({ mensaje: 'Contraseña actualizada correctamente.' });
+  } catch (error) {
+    console.error('Error al cambiar contraseña:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+  }
+};
+
 module.exports = {
   registrar,
   login,
-  solicitarRecuperacion,  // 👈 agregar
-  restablecerPassword     // 👈 agregar
+  solicitarRecuperacion,
+  restablecerPassword,
+  cambiarPassword
 };

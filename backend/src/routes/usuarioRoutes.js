@@ -1,18 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-// A. Reutiliza la función registrar desde authController para el alta desde el panel
-const { registrar } = require('../controllers/authController');
-
-// B. Importa las funciones de gestión de usuario
 const {
   obtenerUsuarios,
   obtenerUsuarioPorId,
+  crearUsuario,
   actualizarUsuario,
-  eliminarUsuario
+  eliminarUsuario,
+  reactivarUsuario
 } = require('../controllers/usuarioController');
 
-// C. Importa los middlewares de seguridad
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
 // Todas las rutas de usuarios exigen inicio de sesión
@@ -21,20 +18,24 @@ router.use(verificarToken);
 // ==========================================
 // RUTAS DE GESTIÓN DE USUARIOS
 // ==========================================
+// Los permisos finos (quién puede ver o editar a quién) se validan en el controller.
 
-// 1. Listar todos los usuarios (Solo Administrador: 1 y Profesor: 2)
+// 1. Listar usuarios (Admin ve todos, Profesor solo alumnos)
 router.get('/', permitirRoles(1, 2), obtenerUsuarios);
 
-// 2. Obtener un usuario puntual por ID (Admin, Profesor o el propio Alumno validado en controller)
+// 2. Ver un usuario con sus suscripciones activas
 router.get('/:id', obtenerUsuarioPorId);
 
-// 3. Crear usuario desde el panel interno (Admin: 1 y Profesor: 2)
-router.post('/', permitirRoles(1, 2), registrar);
+// 3. Crear usuario desde el panel (contraseña inicial = DNI)
+router.post('/', permitirRoles(1, 2), crearUsuario);
 
-// 4. Actualizar datos de usuario (Alumno edita lo suyo; Admin y Profesor editan usuarios)
+// 4. Actualizar datos
 router.put('/:id', actualizarUsuario);
 
-// 5. Eliminar usuario (Admin: 1 y Profesor: 2, con jerarquía controlada)
+// 5. Dar de baja (borrado lógico)
 router.delete('/:id', permitirRoles(1, 2), eliminarUsuario);
+
+// 6. Reactivar un usuario dado de baja
+router.put('/:id/reactivar', permitirRoles(1, 2), reactivarUsuario);
 
 module.exports = router;

@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.debe_cambiar_password) return;
     let cancelled = false;
 
     async function loadDashboard() {
@@ -48,6 +48,7 @@ export default function Dashboard() {
 
   // Si no hay sesión (recarga de página, link directo, etc.) mandamos a la home.
   if (!user) return <Navigate to="/" replace />;
+  if (user.debe_cambiar_password) return <Navigate to="/cambiar-password" replace />;
 
   return (
     <>
