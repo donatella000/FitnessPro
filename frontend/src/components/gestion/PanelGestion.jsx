@@ -1,0 +1,54 @@
+import { useSearchParams } from 'react-router-dom';
+import UsuariosGestion from './UsuariosGestion';
+import ActividadesGestion from './ActividadesGestion';
+import ClasesGestion from './ClasesGestion';
+import SuscripcionesGestion from './SuscripcionesGestion';
+
+// Pestañas del panel. Las marcadas con soloAdmin no aparecen en la vista de Profesor.
+const PESTANIAS = [
+  { id: 'usuarios', admin: 'Usuarios', profesor: 'Alumnos' },
+  { id: 'actividades', admin: 'Actividades', soloAdmin: true },
+  { id: 'clases', admin: 'Clases y horarios', profesor: 'Mis clases y horarios' },
+  { id: 'suscripciones', admin: 'Suscripciones', soloAdmin: true },
+];
+
+export default function PanelGestion({ esAdmin }) {
+  const visibles = PESTANIAS.filter((p) => esAdmin || !p.soloAdmin);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // La pestaña sale de la dirección (?seccion=clases), así el menú del usuario
+  // puede abrir una sección directamente. Si no es válida, se abre la primera.
+  const pedida = searchParams.get('seccion');
+  const actual = visibles.some((p) => p.id === pedida) ? pedida : visibles[0].id;
+
+  const setActiva = (id) => {
+    setSearchParams((params) => {
+      params.set('seccion', id);
+      return params;
+    });
+  };
+
+  return (
+    <div className="panel">
+      <div className="panel__tabs" role="tablist" aria-label="Secciones del panel">
+        {visibles.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            role="tab"
+            aria-selected={p.id === actual}
+            className={`panel__tab${p.id === actual ? ' is-active' : ''}`}
+            onClick={() => setActiva(p.id)}
+          >
+            {esAdmin ? p.admin : p.profesor || p.admin}
+          </button>
+        ))}
+      </div>
+
+      {actual === 'usuarios' && <UsuariosGestion esAdmin={esAdmin} />}
+      {actual === 'actividades' && <ActividadesGestion />}
+      {actual === 'clases' && <ClasesGestion esAdmin={esAdmin} />}
+      {actual === 'suscripciones' && <SuscripcionesGestion />}
+    </div>
+  );
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import UserMenu from './UserMenu';
 import '../styles/Navbar.css';
 
 // Cada href apunta a una sección de la Home. El prefijo "/" hace que funcionen
@@ -53,6 +54,9 @@ export default function Navbar() {
           </a>
         ))}
       </nav>
+
+      {/* Con la sesión iniciada, muestra el avatar con el menú desplegable */}
+      <UserMenu />
     </header>
   );
 }

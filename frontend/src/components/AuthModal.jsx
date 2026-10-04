@@ -89,19 +89,24 @@ export default function AuthModal({ open, onClose }) {
 
     setLoading(true);
     try {
-      if (isRegister) {
-        await register({
-          nombre: form.nombre.trim(),
-          apellido: form.apellido.trim(),
-          dni: form.dni.trim(),
-          email,
-          password: form.password,
-        });
-      } else {
-        await login({ email, password: form.password });
-      }
+      const usuario = isRegister
+        ? await register({
+            nombre: form.nombre.trim(),
+            apellido: form.apellido.trim(),
+            dni: form.dni.trim(),
+            email,
+            password: form.password,
+          })
+        : await login({ email, password: form.password });
+
+      // Al ingresar, el panel arranca siempre desde la primera pestaña
+      localStorage.removeItem('fitnesspro_vista');
       onClose();
-      navigate('/dashboard');
+
+      // Se queda en la portada, salvo que tenga que cambiar la contraseña
+      if (usuario.debe_cambiar_password) {
+        navigate('/cambiar-password');
+      }
     } catch (err) {
       setError(err.message);
     } finally {

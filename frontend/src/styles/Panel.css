@@ -1,0 +1,416 @@
+/* =========================================================
+   Panel de gestión (Admin y Profesor)
+   Usa las variables de index.css: --neon, --neon-ink, --font
+   ========================================================= */
+
+/* ---------- Encabezado del dashboard ---------- */
+.dash__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto 32px;
+  text-align: left;
+}
+
+.dash__top .dash__title {
+  margin: 0;
+}
+
+.dash__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Selector de vista: Administrador / Profesor / Alumno */
+.vista {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--neon-ink);
+}
+
+.vista__opcion {
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font: 600 0.85rem/1 var(--font);
+  cursor: pointer;
+}
+
+.vista__opcion:hover {
+  color: #fff;
+}
+
+.vista__opcion.is-active {
+  background: var(--neon);
+  color: var(--neon-ink);
+}
+
+/* ---------- Contenedor y pestañas ---------- */
+.panel {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.panel__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  border-bottom: 2px solid rgba(3, 23, 10, 0.1);
+}
+
+.panel__tab {
+  position: relative;
+  padding: 12px 4px;
+  margin-right: 20px;
+  border: 0;
+  background: none;
+  color: rgba(3, 23, 10, 0.6);
+  font: 600 0.95rem/1 var(--font);
+  cursor: pointer;
+}
+
+.panel__tab:hover {
+  color: var(--neon-ink);
+}
+
+.panel__tab.is-active {
+  color: var(--neon-ink);
+}
+
+.panel__tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 3px;
+  background: var(--neon-ink);
+}
+
+/* ---------- Secciones ---------- */
+.seccion + .seccion {
+  margin-top: 40px;
+}
+
+.seccion__titulo {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.seccion__ayuda {
+  margin: 0 0 18px;
+  max-width: 70ch;
+  color: rgba(3, 23, 10, 0.65);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* ---------- Formularios ---------- */
+.form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px 16px;
+  align-items: end;
+  padding: 20px;
+  border: 1px solid rgba(3, 23, 10, 0.12);
+  border-radius: 8px;
+  background: #f6f8f6;
+}
+
+.form--compacto {
+  padding: 14px;
+  background: #fff;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(3, 23, 10, 0.8);
+}
+
+.campo--ancho {
+  grid-column: 1 / -1;
+}
+
+.campo input,
+.campo select,
+.campo textarea,
+.input-tabla {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid rgba(3, 23, 10, 0.25);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--neon-ink);
+  font: 500 0.92rem/1.3 var(--font);
+}
+
+.campo textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus,
+.input-tabla:focus {
+  outline: 2px solid var(--neon-ink);
+  outline-offset: 0;
+  border-color: var(--neon-ink);
+}
+
+.form__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form__nota {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(3, 23, 10, 0.7);
+}
+
+.casillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding-top: 4px;
+}
+
+.casillas label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--neon-ink);
+  color: var(--neon);
+  font: 700 0.85rem/1 var(--font);
+  cursor: pointer;
+}
+
+.btn:hover {
+  box-shadow: 0 0 14px rgba(13, 255, 74, 0.45);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+  box-shadow: none;
+}
+
+.btn--secundario {
+  border: 1px solid rgba(3, 23, 10, 0.3);
+  background: #fff;
+  color: var(--neon-ink);
+}
+
+.btn--secundario:hover {
+  box-shadow: none;
+  border-color: var(--neon-ink);
+}
+
+.btn--peligro {
+  background: #fff;
+  border: 1px solid #c0392b;
+  color: #c0392b;
+}
+
+.btn--peligro:hover {
+  box-shadow: none;
+  background: #fdf1f0;
+}
+
+.btn--chico {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 0.8rem;
+}
+
+/* ---------- Tablas ---------- */
+.tabla-contenedor {
+  overflow-x: auto;
+  border: 1px solid rgba(3, 23, 10, 0.12);
+  border-radius: 8px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla th {
+  padding: 12px 14px;
+  background: var(--neon-ink);
+  color: var(--neon);
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 10px 14px;
+  border-top: 1px solid rgba(3, 23, 10, 0.08);
+  vertical-align: middle;
+}
+
+.tabla tr.is-inactivo td {
+  color: rgba(3, 23, 10, 0.45);
+}
+
+.tabla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.tabla__vacia {
+  padding: 24px 14px;
+  color: rgba(3, 23, 10, 0.6);
+  text-align: center;
+}
+
+.input-tabla {
+  min-height: 34px;
+  padding: 4px 8px;
+  max-width: 220px;
+}
+
+.estado {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(13, 255, 74, 0.2);
+  color: var(--neon-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.estado--off {
+  background: rgba(3, 23, 10, 0.08);
+  color: rgba(3, 23, 10, 0.6);
+}
+
+/* ---------- Bloque de una clase con sus horarios ---------- */
+.clase {
+  border: 1px solid rgba(3, 23, 10, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.clase + .clase {
+  margin-top: 20px;
+}
+
+.clase__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #f6f8f6;
+}
+
+.clase__nombre {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.clase__profesor {
+  font-weight: 500;
+  color: rgba(3, 23, 10, 0.7);
+}
+
+.clase .tabla-contenedor {
+  border: 0;
+  border-radius: 0;
+}
+
+.clase__extra {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(3, 23, 10, 0.08);
+}
+
+/* ---------- Avisos ---------- */
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.aviso--ok {
+  background: rgba(13, 255, 74, 0.18);
+  color: var(--neon-ink);
+}
+
+.aviso--error {
+  background: #fdecea;
+  color: #8e2a1f;
+}
+
+.aviso__cerrar {
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cargando {
+  color: rgba(3, 23, 10, 0.6);
+}
+
+/* ---------- Abonos del alumno ---------- */
+.dash__table + .dash__table {
+  margin-top: -16px;
+}
+
+@media (max-width: 640px) {
+  .dash__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .panel__tab {
+    margin-right: 12px;
+  }
+}

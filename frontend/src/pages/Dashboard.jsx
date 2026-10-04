@@ -1,95 +1,98 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useAuth, getToken } from '../context/AuthContext';
-import { API_URL } from '../config';
+import { useAuth } from '../context/AuthContext';
+import api, { mensajeDeError } from '../services/api';
+import AlumnoInicio from '../components/alumno/AlumnoInicio';
+import PanelGestion from '../components/gestion/PanelGestion';
 import '../styles/Dashboard.css';
+import '../styles/Panel.css';
 
-const NAV_ITEMS = ['Perfil', 'Turnos', 'Rutina', 'Pagos', 'Puntos', 'Plan nutricional', 'Medidas'];
+const VISTA_KEY = 'fitnesspro_vista';
 
-function formatFecha(iso) {
-  if (!iso) return '-';
-  const [y, m, d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
+// Vistas que puede usar cada rol (1 = admin, 2 = profesor, 3 = alumno)
+const VISTAS_POR_ROL = {
+  1: ['admin', 'profesor', 'alumno'],
+  2: ['profesor', 'alumno'],
+  3: ['alumno'],
+};
+
+const NOMBRE_VISTA = {
+  admin: 'Administrador',
+  profesor: 'Profesor',
+  alumno: 'Alumno',
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [data, setData] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [molinete, setMolinete] = useState('');
+  const disponibles = user ? VISTAS_POR_ROL[user.id_rol] || ['alumno'] : [];
+
+  // La vista sale de la dirección (?vista=admin), que es lo que usa el menú del usuario.
+  // Si no viene, se usa la última elegida.
+  const vistaUrl = searchParams.get('vista');
+  const guardada = localStorage.getItem(VISTA_KEY);
+  const vistaActual = disponibles.includes(vistaUrl)
+    ? vistaUrl
+    : disponibles.includes(guardada) ? guardada : disponibles[0];
 
   useEffect(() => {
-    if (!user || user.debe_cambiar_password) return;
-    let cancelled = false;
+    if (vistaActual) localStorage.setItem(VISTA_KEY, vistaActual);
+  }, [vistaActual]);
 
-    async function loadDashboard() {
-      setLoading(true);
-      setError('');
-      try {
-        const res = await fetch(`${API_URL}/dashboard/mi-abono`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.mensaje || 'No se pudo cargar el dashboard.');
-        if (!cancelled) setData(json);
-      } catch (err) {
-        if (!cancelled) setError(err.message);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    loadDashboard();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
-  // Si no hay sesión (recarga de página, link directo, etc.) mandamos a la home.
   if (!user) return <Navigate to="/" replace />;
   if (user.debe_cambiar_password) return <Navigate to="/cambiar-password" replace />;
+
+  const cambiarVista = (nueva) => setSearchParams({ vista: nueva });
+
+  const abrirMolinete = async () => {
+    setMolinete('Abriendo…');
+    try {
+      const { data } = await api.post('/turnos/molinete/apertura');
+      setMolinete(data.mensaje);
+    } catch (error) {
+      setMolinete(mensajeDeError(error));
+    }
+    setTimeout(() => setMolinete(''), 3000);
+  };
 
   return (
     <>
       <Navbar />
       <main className="dash">
-        <h1 className="dash__title">Hola, {user.nombre}</h1>
+        <div className="dash__top">
+          <h1 className="dash__title">Hola, {user.nombre}</h1>
 
-        <nav className="dash__nav" aria-label="Secciones de tu cuenta">
-          {NAV_ITEMS.map((item) => (
-            <button key={item} type="button" className="dash__navitem">
-              {item}
-            </button>
-          ))}
-        </nav>
-
-        {loading && <p className="dash__status">Cargando tu abono…</p>}
-        {!loading && error && <p className="dash__status dash__status--error">{error}</p>}
-
-        {!loading && !error && data && (
-          <>
-            {data.turnos_restantes === null ? (
-              <p className="dash__status">{data.mensaje}</p>
-            ) : (
-              <div className="dash__table">
-                <div className="dash__row dash__row--head">
-                  <span>Tu abono</span>
-                  <span>Vencimiento</span>
-                  <span>Turnos restantes</span>
-                </div>
-                <div className="dash__row dash__row--body">
-                  <span>{data.plan}</span>
-                  <span>{formatFecha(data.vencimiento)}</span>
-                  <span>{data.turnos_restantes}</span>
-                </div>
+          <div className="dash__acciones">
+            {disponibles.length > 1 && (
+              <div className="vista" role="group" aria-label="Cambiar vista">
+                {disponibles.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`vista__opcion${v === vistaActual ? ' is-active' : ''}`}
+                    aria-pressed={v === vistaActual}
+                    onClick={() => cambiarVista(v)}
+                  >
+                    {NOMBRE_VISTA[v]}
+                  </button>
+                ))}
               </div>
             )}
 
-            <button type="button" className="btn-pill dash__pay">
-              Pagar abono
-            </button>
-          </>
+            {vistaActual !== 'alumno' && (
+              <button type="button" className="btn" onClick={abrirMolinete} disabled={Boolean(molinete)}>
+                {molinete || 'Abrir molinete'}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {vistaActual === 'alumno' ? (
+          <AlumnoInicio />
+        ) : (
+          <PanelGestion esAdmin={vistaActual === 'admin'} />
         )}
       </main>
     </>
