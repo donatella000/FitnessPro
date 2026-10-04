@@ -1,45 +1,41 @@
 const express = require('express');
 const router = express.Router();
 const {
-  registrarPago,
+  registrarPagoPresencial,
+  crearPreferenciaPago,
+  confirmarPago,
+  recibirWebhook,
   listarPagos,
   obtenerPagoPorId,
-  actualizarPago,
-  eliminarPago,
-  crearPreferenciaPago,
-  recibirWebhook
+  anularPago
 } = require('../controllers/pagoController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
 // ==========================================
-// 1. RUTA PÚBLICA DE WEBHOOK
+// 1. WEBHOOK (público: Mercado Pago avisa sin token)
 // ==========================================
-// Mercado Pago notifica aquí sin token de sesión
 router.post('/webhook', recibirWebhook);
 
 // A partir de acá todas las rutas requieren estar autenticado
 router.use(verificarToken);
 
 // ==========================================
-// 2. RUTAS DE CHECKOUT MERCADO PAGO
+// 2. MERCADO PAGO
 // ==========================================
-// El socio logueado genera el link para abonar su suscripción
-router.post('/crear-preferencia', crearPreferenciaPago);
+router.post('/crear-preferencia', crearPreferenciaPago); // genera el link de pago
+router.post('/confirmar', confirmarPago);                // verificación al volver de Mercado Pago
 
 // ==========================================
-// 3. CONSULTAS Y GESTIÓN DE PAGOS
+// 3. CONSULTAS
 // ==========================================
-// Alumnos ven solo sus pagos; Profesores y Admins ven el historial completo
+// Alumno: su historial. Admin y Profesor: todos los pagos
 router.get('/', listarPagos);
 router.get('/:id', obtenerPagoPorId);
 
-// Cobro manual por mostrador/efectivo (Admin y Profesor)
-router.post('/', permitirRoles(1, 2), registrarPago);
-
-// Modificar datos de comprobante (Admin y Profesor)
-router.put('/:id', permitirRoles(1, 2), actualizarPago);
-
-// Eliminar comprobante de pago (Exclusivo Administrador)
-router.delete('/:id', permitirRoles(1), eliminarPago);
+// ==========================================
+// 4. GESTIÓN
+// ==========================================
+router.post('/', permitirRoles(1, 2), registrarPagoPresencial); // cobro en el gimnasio
+router.delete('/:id', permitirRoles(1), anularPago);            // corrección de un cobro erróneo
 
 module.exports = router;

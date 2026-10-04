@@ -1,34 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const {
+  misActividades,
+  disponibilidad,
   reservarTurno,
-  asignarTurnoManual,
+  asignarTurno,
   cancelarTurno,
+  misTurnos,
   listarTurnos,
-  actualizarAsistencia,
-  validarAccesoMolinete
+  marcarAsistencia,
+  ingresoMolinete,
+  aperturaManual
 } = require('../controllers/turnoController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
-// 1. Endpoint público para la terminal del molinete físico
-router.post('/molinete/acceso', validarAccesoMolinete);
+// ==========================================
+// 1. MOLINETE: INGRESO POR DNI (sin login)
+// ==========================================
+router.post('/molinete/ingreso', ingresoMolinete);
 
-// 2. Rutas protegidas por JWT
+// A partir de acá todas las rutas requieren estar autenticado
 router.use(verificarToken);
 
-// Listar turnos (Alumnos ven los propios, Admin y Profesor ven todos)
-router.get('/', listarTurnos);
+// ==========================================
+// 2. MOLINETE: APERTURA MANUAL (Admin y Profesor)
+// ==========================================
+router.post('/molinete/apertura', permitirRoles(1, 2), aperturaManual);
 
-// Reservar turno propio (Alumno)
-router.post('/reservar', reservarTurno);
+// ==========================================
+// 3. PANTALLA DE TURNOS DEL ALUMNO
+// ==========================================
+router.get('/mis-actividades', misActividades);   // actividades contratadas y sus profesores
+router.get('/disponibilidad', disponibilidad);    // grilla de 7 días de una clase (?id_clase=)
+router.get('/mis-turnos', misTurnos);             // próximos (o ?historial=1)
+router.post('/', reservarTurno);                  // reservar para sí mismo
+router.delete('/:id', cancelarTurno);             // cancelar (alumno: los suyos, hasta 2 hs antes)
 
-// Asignar turno manual a un alumno (Admin: 1 y Profesor: 2)
-router.post('/asignar', permitirRoles(1, 2), asignarTurnoManual);
-
-// Cancelar turno
-router.delete('/:id', cancelarTurno);
-
-// Marcar asistencia manual (Admin: 1 y Profesor: 2)
-router.patch('/:id/asistencia', permitirRoles(1, 2), actualizarAsistencia);
+// ==========================================
+// 4. GESTIÓN (Admin y Profesor)
+// ==========================================
+router.get('/', permitirRoles(1, 2), listarTurnos);                         // turnos del día y filtros
+router.post('/asignar', permitirRoles(1, 2), asignarTurno);                 // anotar a un alumno
+router.post('/:id/asistencia', permitirRoles(1, 2), marcarAsistencia);      // asistencia manual
 
 module.exports = router;

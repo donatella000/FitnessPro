@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer');
-require('dotenv').config();
 
 // Transportador de Gmail, reutilizable en toda la app
 const transporter = nodemailer.createTransport({
