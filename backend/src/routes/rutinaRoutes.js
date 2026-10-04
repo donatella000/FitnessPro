@@ -5,10 +5,11 @@ const {
   crearEjercicio,
   actualizarEjercicio,
   eliminarEjercicio,
-  obtenerRutinaPorUsuario,
+  miRutina,
+  obtenerRutinaDeAlumno,
   crearRutina,
-  actualizarRutinaCompleta,
-  actualizarPesosRutina,
+  actualizarRutina,
+  actualizarPesos,
   eliminarRutina
 } = require('../controllers/rutinaController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
@@ -16,7 +17,7 @@ const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware
 router.use(verificarToken);
 
 // ==========================================
-// Rutas de Catálogo de Ejercicios
+// 1. CATÁLOGO DE EJERCICIOS  ->  /api/rutinas/ejercicios
 // ==========================================
 router.get('/ejercicios', obtenerEjercicios);
 router.post('/ejercicios', permitirRoles(1, 2), crearEjercicio);
@@ -24,21 +25,19 @@ router.put('/ejercicios/:id', permitirRoles(1, 2), actualizarEjercicio);
 router.delete('/ejercicios/:id', permitirRoles(1, 2), eliminarEjercicio);
 
 // ==========================================
-// Rutas de Rutinas
+// 2. CONSULTA DE RUTINAS
 // ==========================================
-// Consultar rutina de un usuario (Admin/Profesor ven de cualquiera, Alumno solo la suya)
-router.get('/usuario/:id_usuario', obtenerRutinaPorUsuario);
+router.get('/mia', miRutina);                                                       // alumno logueado
+router.get('/alumno/:id_alumno', permitirRoles(1, 2), obtenerRutinaDeAlumno);       // admin y profesor
 
-// Crear rutina completa para un alumno (Admin y Profesor)
+// ==========================================
+// 3. GESTIÓN DE RUTINAS (Admin y Profesor)
+// ==========================================
 router.post('/', permitirRoles(1, 2), crearRutina);
-
-// Actualizar rutina completa (Admin y Profesor)
-router.put('/:id', permitirRoles(1, 2), actualizarRutinaCompleta);
-
-// Actualizar exclusivamente los pesos de la rutina (Permitido para Alumnos, Profesores y Admin)
-router.patch('/:id/pesos', actualizarPesosRutina);
-
-// Eliminar rutina (Admin y Profesor)
+router.put('/:id', permitirRoles(1, 2), actualizarRutina);
 router.delete('/:id', permitirRoles(1, 2), eliminarRutina);
+
+// El alumno puede actualizar los pesos de su propia rutina
+router.patch('/:id/pesos', actualizarPesos);
 
 module.exports = router;

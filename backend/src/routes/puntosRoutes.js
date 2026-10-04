@@ -1,34 +1,41 @@
 const express = require('express');
 const router = express.Router();
 const {
-  obtenerProductosCanje,
-  crearProductoCanje,
-  actualizarProductoCanje,
-  eliminarProductoCanje,
-  consultarSaldoPuntos,
-  realizarCanje,
-  ajustarPuntosUsuario
+  obtenerPremios,
+  crearPremio,
+  actualizarPremio,
+  eliminarPremio,
+  miSaldo,
+  movimientosDeUsuario,
+  ajustarPuntos,
+  canjearPremio,
+  listarCanjes,
+  entregarCanje
 } = require('../controllers/puntosController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
-// Todas las rutas requieren estar logueado
 router.use(verificarToken);
 
-// 1. Ver catálogo de premios/productos (Alumnos, Profesores y Administradores)
-router.get('/catalogo', obtenerProductosCanje);
+// ==========================================
+// 1. CATÁLOGO DE PREMIOS  ->  /api/puntos/catalogo
+// ==========================================
+router.get('/catalogo', obtenerPremios);                                  // todos
+router.post('/catalogo', permitirRoles(1, 2), crearPremio);               // admin y profesor
+router.put('/catalogo/:id', permitirRoles(1, 2), actualizarPremio);
+router.delete('/catalogo/:id', permitirRoles(1, 2), eliminarPremio);
 
-// 2. Consultar mis puntos actuales (Socio logueado)
-router.get('/mi-saldo', consultarSaldoPuntos);
+// ==========================================
+// 2. SALDO Y CANJES DEL USUARIO LOGUEADO
+// ==========================================
+router.get('/mi-saldo', miSaldo);
+router.post('/canjear', canjearPremio);
 
-// 3. Canjear un producto (Socio descuenta sus puntos)
-router.post('/canjear', realizarCanje);
-
-// 4. Gestión del catálogo de canjes (Exclusivo Administrador: rol 1)
-router.post('/catalogo', permitirRoles(1), crearProductoCanje);
-router.put('/catalogo/:id', permitirRoles(1), actualizarProductoCanje);
-router.delete('/catalogo/:id', permitirRoles(1), eliminarProductoCanje);
-
-// 5. Ajustar saldo de puntos manualmente a cualquier socio (Exclusivo Administrador: rol 1)
-router.patch('/ajustar', permitirRoles(1), ajustarPuntosUsuario);
+// ==========================================
+// 3. GESTIÓN (Admin y Profesor)
+// ==========================================
+router.get('/movimientos/:id_usuario', permitirRoles(1, 2), movimientosDeUsuario);
+router.post('/ajustar', permitirRoles(1, 2), ajustarPuntos);
+router.get('/canjes', permitirRoles(1, 2), listarCanjes);
+router.put('/canjes/:id/entregar', permitirRoles(1, 2), entregarCanje);
 
 module.exports = router;
