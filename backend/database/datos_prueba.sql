@@ -13,6 +13,7 @@
 
 USE gimnasio;
 SET NAMES utf8mb4;
+SET SQL_SAFE_UPDATES = 0;
 
 -- Tabla auxiliar con los números del 1 al 45, para generar fechas pasadas
 DROP TEMPORARY TABLE IF EXISTS numeros;
@@ -311,6 +312,7 @@ SET puntos = COALESCE((SELECT SUM(m.cantidad) FROM movimientos_puntos m WHERE m.
 WHERE u.id_rol = 3;
 
 DROP TEMPORARY TABLE IF EXISTS numeros;
+SET SQL_SAFE_UPDATES = 1;
 
 -- ---------------------------------------------------------------------
 -- VERIFICACIÓN
