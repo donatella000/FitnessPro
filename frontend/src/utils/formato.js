@@ -23,3 +23,18 @@ export function formatearFecha(iso) {
 export function formatearHora(hora) {
   return hora ? String(hora).slice(0, 5) : '';
 }
+
+// Fecha de hoy en formato 'AAAA-MM-DD', según la hora local
+export function hoyISO() {
+  const d = new Date();
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}
+
+// Suma días a una fecha 'AAAA-MM-DD'
+export function sumarDias(iso, dias) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+}

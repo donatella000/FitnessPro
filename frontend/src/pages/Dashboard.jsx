@@ -3,7 +3,7 @@ import { Navigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import api, { mensajeDeError } from '../services/api';
-import AlumnoInicio from '../components/alumno/AlumnoInicio';
+import AlumnoPanel from '../components/alumno/AlumnoPanel';
 import PanelGestion from '../components/gestion/PanelGestion';
 import '../styles/Dashboard.css';
 import '../styles/Panel.css';
@@ -90,7 +90,7 @@ export default function Dashboard() {
         </div>
 
         {vistaActual === 'alumno' ? (
-          <AlumnoInicio />
+          <AlumnoPanel />
         ) : (
           <PanelGestion esAdmin={vistaActual === 'admin'} />
         )}

@@ -1,0 +1,347 @@
+/* Vista del alumno. Sigue el diseño de Canva: centrada, con el menú negro y verde */
+
+.alumno {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.dash__navitem.is-active {
+  background: var(--neon);
+  color: var(--neon-ink);
+}
+
+.alumno__completar {
+  align-items: center;
+  max-width: 620px;
+  margin: 0 auto 28px;
+  text-align: left;
+}
+
+.alumno__seccion {
+  text-align: left;
+}
+
+.alumno__seccion + .alumno__seccion {
+  margin-top: 44px;
+}
+
+.alumno__vacio {
+  text-align: center;
+}
+
+.alumno__vacio p {
+  margin: 0 0 20px;
+  color: rgba(3, 23, 10, 0.7);
+}
+
+.alumno__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.alumno__acciones--izq {
+  justify-content: flex-start;
+  margin-top: 16px;
+}
+
+.alumno__paso {
+  margin: 22px 0 10px;
+  font-weight: 700;
+}
+
+.alumno__nota {
+  margin-top: 18px;
+  font-weight: 600;
+}
+
+/* ---------- Opciones seleccionables (actividad, profesor, día de rutina) ---------- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 16px;
+  border: 1px solid rgba(3, 23, 10, 0.3);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--neon-ink);
+  font: 700 0.95rem/1.2 var(--font);
+  cursor: pointer;
+}
+
+.chip small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(3, 23, 10, 0.65);
+}
+
+.chip:hover {
+  border-color: var(--neon-ink);
+}
+
+.chip.is-active {
+  border-color: var(--neon-ink);
+  background: var(--neon-ink);
+  color: var(--neon);
+}
+
+.chip.is-active small {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Días de la semana ---------- */
+.dias {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(52px, 1fr));
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.dia {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  border: 1px solid rgba(3, 23, 10, 0.2);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--neon-ink);
+  font-family: var(--font);
+  cursor: pointer;
+}
+
+.dia span {
+  font-size: 0.78rem;
+  color: rgba(3, 23, 10, 0.65);
+}
+
+.dia strong {
+  font-size: 1.25rem;
+}
+
+.dia.is-vacio {
+  opacity: 0.45;
+}
+
+.dia.is-active {
+  border-color: var(--neon-ink);
+  background: var(--neon-ink);
+  color: var(--neon);
+}
+
+.dia.is-active span {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.dia__marca {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--neon);
+  box-shadow: 0 0 0 2px var(--neon-ink);
+}
+
+/* ---------- Horarios del día ---------- */
+.horarios {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.horario {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(3, 23, 10, 0.12);
+  border-radius: 8px;
+}
+
+.horario.is-mio {
+  border-color: var(--neon-ink);
+  background: rgba(13, 255, 74, 0.12);
+}
+
+.horario__hora {
+  font-weight: 700;
+}
+
+.horario__cupo {
+  color: rgba(3, 23, 10, 0.7);
+  font-size: 0.9rem;
+}
+
+/* ---------- Planes de suscripción ---------- */
+.planes + .planes {
+  margin-top: 22px;
+}
+
+.planes__actividad {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.plan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  border: 1px solid rgba(3, 23, 10, 0.15);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--neon-ink);
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan:hover {
+  border-color: var(--neon-ink);
+}
+
+.plan.is-active {
+  border-color: var(--neon-ink);
+  box-shadow: inset 0 0 0 1px var(--neon-ink);
+  background: rgba(13, 255, 74, 0.12);
+}
+
+.plan__nombre {
+  min-width: 220px;
+  font-weight: 700;
+}
+
+.plan__detalle {
+  color: rgba(3, 23, 10, 0.75);
+  font-size: 0.9rem;
+}
+
+/* ---------- Resumen de pago o canje ---------- */
+.resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 20px 24px;
+  border: 2px solid var(--neon-ink);
+  border-radius: 14px;
+  background: rgba(13, 255, 74, 0.18);
+}
+
+.resumen__titulo {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+}
+
+.resumen__linea {
+  margin: 2px 0;
+  font-weight: 600;
+}
+
+.resumen__pagar {
+  min-height: 52px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--neon-ink);
+  color: #fff;
+  font: 700 1rem/1 var(--font);
+  cursor: pointer;
+}
+
+.resumen__pagar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Puntos ---------- */
+.saldo {
+  display: inline-block;
+  min-width: 200px;
+  margin: 4px 0 8px;
+  padding: 10px 28px;
+  border: 2px solid var(--neon-ink);
+  border-radius: 999px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.puntos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.resumen--canje {
+  margin-top: 0;
+}
+
+.fila-elegible.is-active td {
+  background: rgba(13, 255, 74, 0.15);
+}
+
+.fila-elegible__boton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: 600 0.92rem/1.3 var(--font);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.fila-elegible__boton:disabled {
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+.tabla__detalle {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: rgba(3, 23, 10, 0.6);
+}
+
+@media (max-width: 720px) {
+  .puntos {
+    grid-template-columns: 1fr;
+  }
+
+  .horario {
+    grid-template-columns: 1fr auto;
+  }
+
+  .horario__cupo {
+    grid-column: 1;
+  }
+}
