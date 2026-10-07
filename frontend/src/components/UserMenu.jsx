@@ -12,6 +12,9 @@ const ICONOS = {
   abono: 'M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5',
   clave: 'M14 10a4 4 0 1 0-3.46 3.96L9 15.5V18H6.5v2.5H4V18l6.04-6.04M15.5 8.5h.01',
   salir: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
+  rutina: 'M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12',
+  puntos: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z',
+  perfil: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5',
 };
 
 function Icono({ nombre }) {
@@ -26,16 +29,26 @@ function Icono({ nombre }) {
 const OPCIONES_POR_ROL = {
   1: [
     { label: 'Gestión de usuarios', icono: 'usuarios', to: '/dashboard?vista=admin&seccion=usuarios' },
-    { label: 'Actividades', icono: 'actividades', to: '/dashboard?vista=admin&seccion=actividades' },
-    { label: 'Clases y horarios', icono: 'clases', to: '/dashboard?vista=admin&seccion=clases' },
-    { label: 'Suscripciones', icono: 'suscripciones', to: '/dashboard?vista=admin&seccion=suscripciones' },
+    { label: 'Turnos del día', icono: 'clases', to: '/dashboard?vista=admin&seccion=turnos' },
+    { label: 'Cobros', icono: 'suscripciones', to: '/dashboard?vista=admin&seccion=cobros' },
+    { label: 'Rutinas', icono: 'rutina', to: '/dashboard?vista=admin&seccion=rutinas' },
+    { label: 'Premios y puntos', icono: 'puntos', to: '/dashboard?vista=admin&seccion=puntos' },
+    { label: 'Estructura del gimnasio', icono: 'actividades', to: '/dashboard?vista=admin&seccion=actividades' },
   ],
   2: [
     { label: 'Mis alumnos', icono: 'usuarios', to: '/dashboard?vista=profesor&seccion=usuarios' },
-    { label: 'Mis clases y horarios', icono: 'clases', to: '/dashboard?vista=profesor&seccion=clases' },
+    { label: 'Turnos del día', icono: 'clases', to: '/dashboard?vista=profesor&seccion=turnos' },
+    { label: 'Cobros', icono: 'suscripciones', to: '/dashboard?vista=profesor&seccion=cobros' },
+    { label: 'Rutinas', icono: 'rutina', to: '/dashboard?vista=profesor&seccion=rutinas' },
+    { label: 'Premios y puntos', icono: 'puntos', to: '/dashboard?vista=profesor&seccion=puntos' },
   ],
   3: [
-    { label: 'Mi abono', icono: 'abono', to: '/dashboard?vista=alumno' },
+    { label: 'Mi abono', icono: 'abono', to: '/dashboard?vista=alumno&seccion=inicio' },
+    { label: 'Mis turnos', icono: 'clases', to: '/dashboard?vista=alumno&seccion=turnos' },
+    { label: 'Mi rutina', icono: 'rutina', to: '/dashboard?vista=alumno&seccion=rutina' },
+    { label: 'Pagos', icono: 'suscripciones', to: '/dashboard?vista=alumno&seccion=pagos' },
+    { label: 'Mis puntos', icono: 'puntos', to: '/dashboard?vista=alumno&seccion=puntos' },
+    { label: 'Mis datos', icono: 'perfil', to: '/dashboard?vista=alumno&seccion=perfil' },
   ],
 };
 
