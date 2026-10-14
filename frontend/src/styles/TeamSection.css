@@ -47,14 +47,34 @@
 }
 
 .team__activity {
-  margin: 0 0 24px;
+  margin: 0 0 6px;
   font-size: 1.05rem;
   font-weight: 700;
 }
 
+.team__descripcion {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  color: rgba(3, 23, 10, 0.8);
+}
+
+.team__ayuda {
+  margin: 0 0 20px;
+  font-size: 0.82rem;
+  color: rgba(3, 23, 10, 0.7);
+}
+
+.team__estado {
+  margin: 12px 0 24px;
+  font-size: 0.92rem;
+  color: rgba(3, 23, 10, 0.8);
+}
+
+/* Las tarjetas se centran y se adaptan a la cantidad de profesores */
 .team__profs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 200px));
+  justify-content: center;
   gap: clamp(14px, 3vw, 28px);
   margin-bottom: 28px;
 }
@@ -64,6 +84,12 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
 /* Forma "lápida" con tope redondeado */
@@ -74,13 +100,31 @@
   place-items: center;
   padding: 14%;
   background: #d9d9d9;
+  border: 3px solid transparent;
   border-radius: 999px 999px 12px 12px;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .team__tombstone svg {
   width: 100%;
   height: 100%;
   fill: var(--neon-ink);
+  transition: fill 0.15s ease;
+}
+
+.team__profcard:hover .team__tombstone {
+  border-color: var(--neon-ink);
+}
+
+/* Profesor seleccionado */
+.team__profcard.is-selected .team__tombstone {
+  background: var(--neon-ink);
+  border-color: var(--neon-ink);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6);
+}
+
+.team__profcard.is-selected .team__tombstone svg {
+  fill: var(--neon);
 }
 
 .team__profname {
@@ -88,6 +132,11 @@
   font-size: 0.78rem;
   letter-spacing: 0.02em;
   text-align: center;
+}
+
+.team__profcard.is-selected .team__profname {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .team__toggle {
@@ -104,6 +153,21 @@
 .team__schedule {
   margin-top: 24px;
   overflow-x: auto;
+}
+
+.team__schedule-titulo {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.team__sala {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .team__schedule table {

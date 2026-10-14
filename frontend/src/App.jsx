@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
 import PagoResultado from './pages/PagoResultado';
+import Molinete from './pages/Molinete';
 
 export default function App() {
   return (
@@ -14,6 +15,8 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/restablecer-password" element={<ResetPassword />} />
         <Route path="/cambiar-password" element={<ChangePassword />} />
+        {/* Pantalla de la computadora de la entrada */}
+        <Route path="/molinete" element={<Molinete />} />
         {/* Páginas a las que vuelve Mercado Pago */}
         <Route path="/pago-exitoso" element={<PagoResultado tipo="exitoso" />} />
         <Route path="/pago-pendiente" element={<PagoResultado tipo="pendiente" />} />

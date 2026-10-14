@@ -12,7 +12,10 @@ const {
   agregarHorario,
   generarHorarios,
   actualizarHorario,
-  eliminarHorario
+  eliminarHorario,
+  obtenerProfesoresSala,
+  agregarProfesorSala,
+  eliminarProfesorSala
 } = require('../controllers/claseController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
@@ -40,7 +43,14 @@ router.put('/horarios/:id', permitirRoles(1, 2), actualizarHorario);
 router.delete('/horarios/:id', permitirRoles(1, 2), eliminarHorario);
 
 // ==========================================
-// 3. CLASES  ->  /api/clases
+// 3. PROFESORES DE SALA (musculación)  ->  /api/clases/sala
+// ==========================================
+router.get('/sala', permitirRoles(1, 2), obtenerProfesoresSala);
+router.post('/sala', permitirRoles(1), agregarProfesorSala);
+router.delete('/sala/:id', permitirRoles(1), eliminarProfesorSala);
+
+// ==========================================
+// 4. CLASES  ->  /api/clases
 // ==========================================
 router.get('/', obtenerClases);                                // todos
 router.post('/', permitirRoles(1, 2), crearClase);             // admin elige profe; profe se asigna a sí mismo

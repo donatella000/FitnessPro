@@ -14,6 +14,8 @@ const ICONOS = {
   salir: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
   rutina: 'M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12',
   puntos: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z',
+  estadisticas: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  molinete: 'M12 3v18M5 7l7 5 7-5M5 17l7-5 7 5',
   perfil: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5',
 };
 
@@ -28,6 +30,7 @@ function Icono({ nombre }) {
 // Opciones según el rol (1 = admin, 2 = profesor, 3 = alumno)
 const OPCIONES_POR_ROL = {
   1: [
+    { label: 'Estadísticas', icono: 'estadisticas', to: '/dashboard?vista=admin&seccion=estadisticas' },
     { label: 'Gestión de usuarios', icono: 'usuarios', to: '/dashboard?vista=admin&seccion=usuarios' },
     { label: 'Turnos del día', icono: 'clases', to: '/dashboard?vista=admin&seccion=turnos' },
     { label: 'Cobros', icono: 'suscripciones', to: '/dashboard?vista=admin&seccion=cobros' },
@@ -126,6 +129,20 @@ export default function UserMenu() {
               {op.label}
             </Link>
           ))}
+
+          {user.id_rol !== 3 && (
+            <a
+              href="/molinete"
+              target="_blank"
+              rel="noreferrer"
+              role="menuitem"
+              className="usermenu__item"
+              onClick={() => setAbierto(false)}
+            >
+              <Icono nombre="molinete" />
+              Pantalla del molinete
+            </a>
+          )}
 
           <hr className="usermenu__separador" />
 

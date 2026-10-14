@@ -656,6 +656,127 @@ const eliminarHorario = async (req, res) => {
   }
 };
 
+// ==========================================================
+// PROFESORES DE SALA (musculación) - solo Admin
+// ==========================================================
+// Son los turnos de trabajo de los profesores en la sala. Se muestran
+// en la portada; el alumno no elige profesor al reservar musculación.
+
+// Listar los turnos de sala. Filtro opcional: ?id_actividad=1
+const obtenerProfesoresSala = async (req, res) => {
+  try {
+    const condiciones = ['u.activo = 1', 'a.activo = 1'];
+    const valores = [];
+    if (req.query.id_actividad) {
+      condiciones.push('ps.id_actividad = ?');
+      valores.push(req.query.id_actividad);
+    }
+
+    const [filas] = await db.query(`
+      SELECT ps.id_profesor_sala, ps.id_actividad, a.nombre AS actividad,
+             ps.id_profesor, CONCAT(u.nombre, ' ', u.apellido) AS profesor,
+             ps.dia_semana, ps.hora_inicio, ps.hora_fin
+      FROM profesores_sala ps
+      INNER JOIN usuarios u ON ps.id_profesor = u.id_usuario
+      INNER JOIN actividades a ON ps.id_actividad = a.id_actividad
+      WHERE ${condiciones.join(' AND ')}
+      ORDER BY profesor, ps.dia_semana, ps.hora_inicio
+    `, valores);
+
+    return res.json(filas.map((f) => ({ ...f, dia_nombre: NOMBRES_DIAS[f.dia_semana] })));
+  } catch (error) {
+    console.error('Error al obtener profesores de sala:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al obtener los profesores de sala.' });
+  }
+};
+
+// Asignar un profesor a la sala en uno o varios días con la misma franja.
+// Body: { id_actividad, id_profesor, dias: [1,2,3,4,5], hora_inicio: '08:00', hora_fin: '15:00' }
+const agregarProfesorSala = async (req, res) => {
+  try {
+    const { id_actividad, id_profesor, dias, hora_inicio, hora_fin } = req.body;
+
+    if (!id_actividad || !id_profesor || !Array.isArray(dias) || dias.length === 0 || !hora_inicio || !hora_fin) {
+      return res.status(400).json({ mensaje: 'Faltan datos: actividad, profesor, días y franja horaria.' });
+    }
+    if (!REGEX_HORA.test(hora_inicio) || !REGEX_HORA.test(hora_fin) || aMinutos(hora_fin) <= aMinutos(hora_inicio)) {
+      return res.status(400).json({ mensaje: 'La franja horaria no es válida.' });
+    }
+    if (dias.some((d) => Number(d) < 1 || Number(d) > 7)) {
+      return res.status(400).json({ mensaje: 'Los días deben ser números de 1 (lunes) a 7 (domingo).' });
+    }
+
+    const [actividad] = await db.query(
+      "SELECT id_actividad FROM actividades WHERE id_actividad = ? AND tipo = 'musculacion' AND activo = 1",
+      [id_actividad]
+    );
+    if (actividad.length === 0) {
+      return res.status(400).json({ mensaje: 'Los profesores de sala solo se asignan a actividades de turnos libres.' });
+    }
+
+    const [profesor] = await db.query(
+      'SELECT id_usuario FROM usuarios WHERE id_usuario = ? AND id_rol = ? AND activo = 1',
+      [id_profesor, ROL_PROFESOR]
+    );
+    if (profesor.length === 0) {
+      return res.status(400).json({ mensaje: 'El usuario indicado no es un profesor activo.' });
+    }
+
+    const diasConflicto = [];
+    for (const dia of dias) {
+      // Superposición con otro turno de sala del mismo profesor
+      const [enSala] = await db.query(`
+        SELECT 1 FROM profesores_sala
+        WHERE id_profesor = ? AND dia_semana = ? AND hora_inicio < ? AND hora_fin > ?
+        LIMIT 1
+      `, [id_profesor, dia, hora_fin, hora_inicio]);
+
+      // Superposición con una clase que dicta ese profesor
+      const [enClase] = await db.query(`
+        SELECT 1 FROM horarios_clase h
+        INNER JOIN clases c ON h.id_clase = c.id_clase
+        WHERE c.id_profesor = ? AND c.activo = 1 AND h.activo = 1
+          AND h.dia_semana = ? AND h.hora_inicio < ? AND h.hora_fin > ?
+        LIMIT 1
+      `, [id_profesor, dia, hora_fin, hora_inicio]);
+
+      if (enSala.length || enClase.length) diasConflicto.push(NOMBRES_DIAS[dia]);
+    }
+
+    if (diasConflicto.length > 0) {
+      return res.status(400).json({
+        mensaje: `El profesor ya tiene un turno o una clase en esa franja: ${diasConflicto.join(', ')}.`
+      });
+    }
+
+    for (const dia of dias) {
+      await db.query(`
+        INSERT INTO profesores_sala (id_actividad, id_profesor, dia_semana, hora_inicio, hora_fin)
+        VALUES (?, ?, ?, ?, ?)
+      `, [id_actividad, id_profesor, dia, hora_inicio, hora_fin]);
+    }
+
+    return res.status(201).json({ mensaje: `Profesor asignado a la sala en ${dias.length} día(s).` });
+  } catch (error) {
+    console.error('Error al asignar profesor de sala:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al asignar el profesor de sala.' });
+  }
+};
+
+// Quitar un turno de sala
+const eliminarProfesorSala = async (req, res) => {
+  try {
+    const [resultado] = await db.query('DELETE FROM profesores_sala WHERE id_profesor_sala = ?', [req.params.id]);
+    if (resultado.affectedRows === 0) {
+      return res.status(404).json({ mensaje: 'Turno de sala no encontrado.' });
+    }
+    return res.json({ mensaje: 'Turno de sala eliminado.' });
+  } catch (error) {
+    console.error('Error al eliminar profesor de sala:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al eliminar el turno de sala.' });
+  }
+};
+
 module.exports = {
   obtenerActividades,
   crearActividad,
@@ -668,5 +789,8 @@ module.exports = {
   agregarHorario,
   generarHorarios,
   actualizarHorario,
-  eliminarHorario
+  eliminarHorario,
+  obtenerProfesoresSala,
+  agregarProfesorSala,
+  eliminarProfesorSala
 };

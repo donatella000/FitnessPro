@@ -20,9 +20,11 @@
   font-size: 0.95rem;
 }
 
+/* Se centran y se adaptan a la cantidad de actividades cargadas */
 .activities__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 200px));
+  justify-content: center;
   gap: clamp(14px, 2.4vw, 28px);
   max-width: 900px;
   margin: 0 auto;
@@ -33,6 +35,12 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
 /* Forma "banner" (rectángulo con punta hacia abajo) */
@@ -44,6 +52,11 @@
   padding-bottom: 10%;
   background: var(--neon-ink);
   clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+  transition: transform 0.15s ease;
+}
+
+.activities__card:hover .activities__banner {
+  transform: translateY(-4px);
 }
 
 .activities__banner svg {

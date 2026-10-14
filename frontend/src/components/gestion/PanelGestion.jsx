@@ -8,9 +8,11 @@ import TurnosGestion from './TurnosGestion';
 import RutinasGestion from './RutinasGestion';
 import EjerciciosGestion from './EjerciciosGestion';
 import PuntosGestion from './PuntosGestion';
+import EstadisticasGestion from './EstadisticasGestion';
 
 // Pestañas del panel. Las marcadas con soloAdmin no aparecen en la vista de Profesor.
 const PESTANIAS = [
+  { id: 'estadisticas', admin: 'Estadísticas', soloAdmin: true },
   { id: 'usuarios', admin: 'Usuarios', profesor: 'Alumnos' },
   { id: 'turnos', admin: 'Turnos del día' },
   { id: 'cobros', admin: 'Cobros' },
@@ -55,6 +57,7 @@ export default function PanelGestion({ esAdmin }) {
         ))}
       </div>
 
+      {actual === 'estadisticas' && <EstadisticasGestion />}
       {actual === 'usuarios' && <UsuariosGestion esAdmin={esAdmin} />}
       {actual === 'turnos' && <TurnosGestion />}
       {actual === 'cobros' && <CobrosGestion esAdmin={esAdmin} />}

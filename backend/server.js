@@ -12,7 +12,8 @@ const rutinaRoutes = require('./src/routes/rutinaRoutes');
 const suscripcionRoutes = require('./src/routes/suscripcionRoutes');
 const pagoRoutes = require('./src/routes/pagoRoutes');
 const puntosRoutes = require('./src/routes/puntosRoutes');
-const dashboardRoutes = require('./src/routes/dashboardRoutes'); // NUEVO
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
+const publicoRoutes = require('./src/routes/publicoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +32,7 @@ app.use('/api/suscripciones', suscripcionRoutes);
 app.use('/api/pagos', pagoRoutes);
 app.use('/api/puntos', puntosRoutes);
 app.use('/api/dashboard', dashboardRoutes); // NUEVO
+app.use('/api/publico', publicoRoutes);
 
 // Ruta de prueba de salud de la API
 app.get('/api/saludo', (req, res) => {

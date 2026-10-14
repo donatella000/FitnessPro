@@ -4,6 +4,7 @@ import { DIAS, formatearHora } from '../../utils/formato';
 import Aviso from './Aviso';
 
 const HORARIO_VACIO = { dia_semana: '1', hora_inicio: '', hora_fin: '', cupo_maximo: '' };
+const SALA_VACIO = { id_profesor: '', dias: [1, 2, 3, 4, 5], hora_inicio: '08:00', hora_fin: '15:00' };
 const GENERAR_VACIO = {
   dias: [1, 2, 3, 4, 5],
   hora_desde: '08:00',
@@ -30,18 +31,26 @@ export default function ClasesGestion({ esAdmin }) {
 
   const [editandoCupo, setEditandoCupo] = useState(null); // { id_horario, cupo_maximo }
 
+  // Profesores de sala de musculación (solo Admin)
+  const [sala, setSala] = useState([]);
+  const [formSala, setFormSala] = useState(SALA_VACIO);
+
   const cargar = useCallback(async () => {
     try {
       const pedidos = [
         api.get('/clases', { params: esAdmin ? {} : { mias: 1 } }),
         api.get('/clases/actividades'),
       ];
-      if (esAdmin) pedidos.push(api.get('/usuarios', { params: { rol: 2 } }));
+      if (esAdmin) {
+        pedidos.push(api.get('/usuarios', { params: { rol: 2 } }));
+        pedidos.push(api.get('/clases/sala'));
+      }
 
-      const [rClases, rActividades, rProfesores] = await Promise.all(pedidos);
+      const [rClases, rActividades, rProfesores, rSala] = await Promise.all(pedidos);
       setClases(rClases.data);
       setActividades(rActividades.data);
       if (rProfesores) setProfesores(rProfesores.data);
+      if (rSala) setSala(rSala.data);
     } catch (error) {
       setAviso({ tipo: 'error', texto: mensajeDeError(error) });
     } finally {
@@ -79,6 +88,30 @@ export default function ClasesGestion({ esAdmin }) {
     setAbierto(abierto?.id_clase === id_clase && abierto.tipo === tipo ? null : { id_clase, tipo });
     setHorario(HORARIO_VACIO);
     setGenerar(GENERAR_VACIO);
+    setFormSala(SALA_VACIO);
+  };
+
+  const asignarSala = async (e, id_actividad) => {
+    e.preventDefault();
+    if (formSala.dias.length === 0) {
+      setAviso({ tipo: 'error', texto: 'Elegí al menos un día.' });
+      return;
+    }
+    const ok = await ejecutar(() => api.post('/clases/sala', {
+      id_actividad,
+      id_profesor: Number(formSala.id_profesor),
+      dias: formSala.dias,
+      hora_inicio: formSala.hora_inicio,
+      hora_fin: formSala.hora_fin,
+    }));
+    if (ok) setFormSala(SALA_VACIO);
+  };
+
+  const alternarDiaSala = (dia) => {
+    setFormSala((f) => ({
+      ...f,
+      dias: f.dias.includes(dia) ? f.dias.filter((d) => d !== dia) : [...f.dias, dia].sort(),
+    }));
   };
 
   const agregarHorario = async (e, id_clase) => {
@@ -214,6 +247,11 @@ export default function ClasesGestion({ esAdmin }) {
                       Generar horarios
                     </button>
                   )}
+                  {esMusculacion && esAdmin && (
+                    <button type="button" className="btn btn--chico btn--secundario" onClick={() => abrirFormulario(clase.id_clase, 'sala')}>
+                      Asignar profesor de sala
+                    </button>
+                  )}
                   <button type="button" className="btn btn--chico btn--secundario" onClick={() => abrirFormulario(clase.id_clase, 'horario')}>
                     Agregar horario
                   </button>
@@ -311,6 +349,92 @@ export default function ClasesGestion({ esAdmin }) {
                     </div>
                     <p className="form__nota">Los horarios que ya existan no se duplican.</p>
                   </form>
+                </div>
+              )}
+
+              {formAbierto === 'sala' && (
+                <div className="clase__extra">
+                  <form className="form form--compacto" onSubmit={(e) => asignarSala(e, clase.id_actividad)}>
+                    <label className="campo">
+                      Profesor
+                      <select value={formSala.id_profesor} onChange={(e) => setFormSala((f) => ({ ...f, id_profesor: e.target.value }))} required>
+                        <option value="">Elegí un profesor</option>
+                        {profesores.map((p) => (
+                          <option key={p.id_usuario} value={p.id_usuario}>{p.apellido}, {p.nombre}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="campo">
+                      Desde
+                      <input type="time" value={formSala.hora_inicio} onChange={(e) => setFormSala((f) => ({ ...f, hora_inicio: e.target.value }))} required />
+                    </label>
+                    <label className="campo">
+                      Hasta
+                      <input type="time" value={formSala.hora_fin} onChange={(e) => setFormSala((f) => ({ ...f, hora_fin: e.target.value }))} required />
+                    </label>
+                    <div className="campo campo--ancho">
+                      Días
+                      <div className="casillas">
+                        {DIAS.slice(1).map((nombre, i) => (
+                          <label key={nombre}>
+                            <input type="checkbox" checked={formSala.dias.includes(i + 1)} onChange={() => alternarDiaSala(i + 1)} />
+                            {nombre}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="form__acciones">
+                      <button type="submit" className="btn">Asignar</button>
+                    </div>
+                    <p className="form__nota">
+                      Es informativo: se muestra en la portada. El alumno no elige profesor al reservar musculación.
+                    </p>
+                  </form>
+                </div>
+              )}
+
+              {esMusculacion && esAdmin && (
+                <div className="clase__extra">
+                  <p className="clase__subtitulo">Profesores de sala</p>
+                  {sala.filter((t) => t.id_actividad === clase.id_actividad).length === 0 ? (
+                    <p className="seccion__ayuda" style={{ margin: 0 }}>
+                      Sin profesores asignados. Usá "Asignar profesor de sala" para que aparezcan en la portada.
+                    </p>
+                  ) : (
+                    <div className="tabla-contenedor">
+                      <table className="tabla">
+                        <thead>
+                          <tr>
+                            <th>Profesor</th>
+                            <th>Día</th>
+                            <th>Franja</th>
+                            <th aria-label="Acciones" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sala.filter((t) => t.id_actividad === clase.id_actividad).map((t) => (
+                            <tr key={t.id_profesor_sala}>
+                              <td>{t.profesor}</td>
+                              <td>{t.dia_nombre}</td>
+                              <td>{formatearHora(t.hora_inicio)} a {formatearHora(t.hora_fin)}</td>
+                              <td>
+                                <div className="tabla__acciones">
+                                  <button
+                                    type="button"
+                                    className="btn btn--chico btn--peligro"
+                                    onClick={() => ejecutar(() => api.delete(`/clases/sala/${t.id_profesor_sala}`))}
+                                  >
+                                    Quitar
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  <p className="clase__subtitulo" style={{ marginTop: 18 }}>Horarios de la sala</p>
                 </div>
               )}
 

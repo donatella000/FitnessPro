@@ -414,3 +414,10 @@
     margin-right: 12px;
   }
 }
+
+/* Subtítulos dentro del bloque de una clase (ej.: profesores de sala) */
+.clase__subtitulo {
+  margin: 0 0 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}

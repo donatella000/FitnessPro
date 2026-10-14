@@ -1,52 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { agruparHorarios, obtenerEquipo } from '../services/publico';
 import '../styles/TeamSection.css';
-
-/*
- * Datos de ejemplo. Reemplazá nombres, días, horarios y profesores
- * por los reales del gimnasio. "profesor" en cada horario indica quién
- * dicta esa clase puntual.
- */
-const TEAM = {
-  musculacion: {
-    label: 'Musculación',
-    profesores: ['Profe Marcos', 'Profe Cristian', 'Profe Paula'],
-    horarios: [
-      { dia: 'Lunes y miércoles', horario: '08:00 - 09:00', profesor: 'Profe Marcos' },
-      { dia: 'Lunes y miércoles', horario: '18:00 - 19:00', profesor: 'Profe Cristian' },
-      { dia: 'Martes y jueves', horario: '10:00 - 11:00', profesor: 'Profe Paula' },
-      { dia: 'Viernes', horario: '17:00 - 18:00', profesor: 'Profe Marcos' },
-    ],
-  },
-  yoga: {
-    label: 'Yoga',
-    profesores: ['Profe Matias', 'Profe Milagros', 'Profe Angie'],
-    horarios: [
-      { dia: 'Lunes y jueves', horario: '07:30 - 08:30', profesor: 'Profe Matias' },
-      { dia: 'Martes y viernes', horario: '19:00 - 20:00', profesor: 'Profe Milagros' },
-      { dia: 'Miércoles', horario: '09:00 - 10:00', profesor: 'Profe Angie' },
-    ],
-  },
-  pilates: {
-    label: 'Pilates reformer',
-    profesores: ['Profe Victor', 'Profe Ivan', 'Profe Rafael'],
-    horarios: [
-      { dia: 'Lunes y miércoles', horario: '09:00 - 10:00', profesor: 'Profe Victor '},
-      { dia: 'Martes y jueves', horario: '17:00 - 18:00', profesor: 'Profe ivan'  },
-      { dia: 'Viernes', horario: '11:00 - 12:00', profesor: 'Profe Rafael' },
-    ],
-  },
-  spinning: {
-    label: 'Spinning',
-    profesores: ['Profe Baltazar', 'Profe Joshue', 'Profe Tomas'],
-    horarios: [
-      { dia: 'Lunes, miércoles y viernes', horario: '19:30 - 20:30', profesor: 'Profe Baltazar' },
-      { dia: 'Martes y jueves', horario: '07:00 - 08:00', profesor: 'Profe Joshue' },
-      { dia: 'Sábado', horario: '10:00 - 11:00', profesor: 'Profe Tomas' },
-    ],
-  },
-};
-
-const TABS = ['musculacion', 'yoga', 'pilates', 'spinning'];
 
 function PersonIcon() {
   return (
@@ -57,81 +11,184 @@ function PersonIcon() {
   );
 }
 
-export default function TeamSection() {
-  const [activeTab, setActiveTab] = useState('musculacion');
-  const [showSchedule, setShowSchedule] = useState(false);
-  const activity = TEAM[activeTab];
+const nombreProfe = (p) => `Profe ${p.nombre}`;
 
-  const selectTab = (tabId) => {
-    setActiveTab(tabId);
-    setShowSchedule(false);
+// Nuestro equipo: las actividades, sus profesores activos y los horarios
+// salen de la base de datos (ruta pública, no hace falta iniciar sesión).
+export default function TeamSection() {
+  const [actividades, setActividades] = useState([]);
+  const [estado, setEstado] = useState('cargando'); // 'cargando' | 'listo' | 'error'
+  const [idActiva, setIdActiva] = useState(null);
+  const [idProfesor, setIdProfesor] = useState(null);
+  const [verHorarios, setVerHorarios] = useState(false);
+
+  useEffect(() => {
+    obtenerEquipo()
+      .then((datos) => {
+        setActividades(datos);
+        setIdActiva((actual) => actual ?? datos[0]?.id_actividad ?? null);
+        setEstado('listo');
+      })
+      .catch(() => setEstado('error'));
+  }, []);
+
+  // La sección Actividades puede pedir que se abra una actividad puntual
+  useEffect(() => {
+    const abrir = (e) => elegirActividad(e.detail);
+    window.addEventListener('fitnesspro:ver-actividad', abrir);
+    return () => window.removeEventListener('fitnesspro:ver-actividad', abrir);
+  }, []);
+
+  function elegirActividad(id) {
+    setIdActiva(id);
+    setIdProfesor(null);
+    setVerHorarios(false);
+  }
+
+  // Un clic selecciona al profesor y muestra sus horarios; otro clic lo deselecciona
+  const elegirProfesor = (id) => {
+    if (idProfesor === id) {
+      setIdProfesor(null);
+      setVerHorarios(false);
+    } else {
+      setIdProfesor(id);
+      setVerHorarios(true);
+    }
   };
+
+  const actividad = actividades.find((a) => a.id_actividad === idActiva);
+  const esSala = actividad?.tipo === 'musculacion';
+  const profesor = actividad?.profesores.find((p) => p.id_profesor === idProfesor);
+
+  // Filas de la tabla: las del profesor elegido, o las de todos
+  const filas = actividad
+    ? profesor
+      ? agruparHorarios(profesor.horarios)
+      : agruparHorarios(
+        actividad.profesores.flatMap((p) => p.horarios.map((h) => ({ ...h, profesor: nombreProfe(p) }))),
+        true
+      )
+    : [];
+
+  const sala = esSala && actividad.horarios_sala?.length ? agruparHorarios(actividad.horarios_sala) : [];
 
   return (
     <section id="equipo" className="team">
       <h2 className="team__title">Nuestro equipo</h2>
 
-      <div className="team__tabs" role="tablist" aria-label="Actividades">
-        {TABS.map((tabId) => (
-          <button
-            key={tabId}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === tabId}
-            className={activeTab === tabId ? 'is-active' : ''}
-            onClick={() => selectTab(tabId)}
-          >
-            {TEAM[tabId].label}
-          </button>
-        ))}
-      </div>
+      {estado === 'cargando' && <p className="team__estado">Cargando…</p>}
+      {estado === 'error' && (
+        <p className="team__estado">No pudimos cargar la información del equipo. Probá recargar la página.</p>
+      )}
+      {estado === 'listo' && actividades.length === 0 && (
+        <p className="team__estado">Muy pronto vas a ver acá nuestras actividades y profesores.</p>
+      )}
 
-      <div className="team__panel">
-        <h3 className="team__activity">{activity.label}</h3>
-
-        <div className="team__profs">
-          {activity.profesores.map((nombre) => (
-            <div className="team__profcard" key={nombre}>
-              <div className="team__tombstone">
-                <PersonIcon />
-              </div>
-              <span className="team__profname">{nombre.toUpperCase()}</span>
-            </div>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className="btn-pill team__toggle"
-          aria-expanded={showSchedule}
-          onClick={() => setShowSchedule((v) => !v)}
-        >
-          {showSchedule ? 'Ocultar horarios' : 'Ver horarios'}
-        </button>
-
-        {showSchedule && (
-          <div className="team__schedule">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Días</th>
-                  <th scope="col">Horario</th>
-                  <th scope="col">Profesor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.horarios.map((h, i) => (
-                  <tr key={`${h.dia}-${h.horario}-${i}`}>
-                    <td>{h.dia}</td>
-                    <td>{h.horario}</td>
-                    <td>{h.profesor}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {actividad && (
+        <>
+          <div className="team__tabs" role="tablist" aria-label="Actividades">
+            {actividades.map((a) => (
+              <button
+                key={a.id_actividad}
+                type="button"
+                role="tab"
+                aria-selected={a.id_actividad === idActiva}
+                className={a.id_actividad === idActiva ? 'is-active' : ''}
+                onClick={() => elegirActividad(a.id_actividad)}
+              >
+                {a.nombre}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
+
+          <div className="team__panel">
+            <h3 className="team__activity">{actividad.nombre}</h3>
+            {actividad.descripcion && <p className="team__descripcion">{actividad.descripcion}</p>}
+
+            {actividad.profesores.length === 0 ? (
+              <p className="team__estado">Todavía no hay profesores asignados a esta actividad.</p>
+            ) : (
+              <>
+                <p className="team__ayuda">Tocá un profesor para ver sus horarios.</p>
+                <div className="team__profs">
+                  {actividad.profesores.map((p) => {
+                    const elegido = p.id_profesor === idProfesor;
+                    return (
+                      <button
+                        type="button"
+                        className={`team__profcard${elegido ? ' is-selected' : ''}`}
+                        key={p.id_profesor}
+                        aria-pressed={elegido}
+                        onClick={() => elegirProfesor(p.id_profesor)}
+                      >
+                        <span className="team__tombstone">
+                          <PersonIcon />
+                        </span>
+                        <span className="team__profname">{nombreProfe(p).toUpperCase()}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {profesor ? (
+              <button type="button" className="btn-pill team__toggle" onClick={() => elegirProfesor(profesor.id_profesor)}>
+                Ver todos los horarios
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-pill team__toggle"
+                aria-expanded={verHorarios}
+                onClick={() => setVerHorarios((v) => !v)}
+              >
+                {verHorarios ? 'Ocultar horarios' : 'Ver horarios'}
+              </button>
+            )}
+
+            {verHorarios && (
+              <div className="team__schedule">
+                {sala.length > 0 && !profesor && (
+                  <p className="team__sala">
+                    La sala abre {sala.map((s) => `${s.diasTexto.toLowerCase()} de ${s.hora_inicio} a ${s.hora_fin}`).join('; ')}.
+                    Reservás tu turno por hora desde tu cuenta.
+                  </p>
+                )}
+
+                <h4 className="team__schedule-titulo">
+                  {profesor
+                    ? `Horarios de ${nombreProfe(profesor)}${esSala ? ' en la sala' : ''}`
+                    : esSala ? 'Profesores en la sala' : `Horarios de ${actividad.nombre}`}
+                </h4>
+
+                {filas.length === 0 ? (
+                  <p className="team__estado">No hay horarios cargados.</p>
+                ) : (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Días</th>
+                        <th scope="col">Horario</th>
+                        {!profesor && <th scope="col">{esSala ? 'Profesor en sala' : 'Profesor'}</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filas.map((f) => (
+                        <tr key={`${f.diasTexto}-${f.horario}-${f.profesor || ''}`}>
+                          <td>{f.diasTexto}</td>
+                          <td>{f.horario}</td>
+                          {!profesor && <td>{f.profesor}</td>}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </section>
   );
 }
