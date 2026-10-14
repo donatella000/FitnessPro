@@ -31,7 +31,7 @@ CREATE TABLE usuarios (
     id_rol                  INT NOT NULL DEFAULT 3,
     -- 1 = debe cambiar la contraseña al ingresar (alta por admin/profe o
     -- contraseña temporal de "olvidé mi contraseña")
-    debe_cambiar_password   TINYINT(1) NOT NULL DEFAULT 0,
+    debe_cambiar_password   TINYINT NOT NULL DEFAULT 0,
     -- Recuperación de contraseña ("olvidé mi contraseña")
     reset_token             VARCHAR(255) NULL,
     reset_token_expira      DATETIME NULL,
@@ -43,7 +43,7 @@ CREATE TABLE usuarios (
     contacto_emergencia_nombre VARCHAR(100) NULL,
     contacto_emergencia_tel    VARCHAR(20)  NULL,
     puntos                  INT NOT NULL DEFAULT 0,   -- saldo actual
-    activo                  TINYINT(1) NOT NULL DEFAULT 1,
+    activo                  TINYINT NOT NULL DEFAULT 1,
     fecha_registro          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_rol) REFERENCES rol (id_rol)
 );
@@ -59,7 +59,7 @@ CREATE TABLE actividades (
     -- 'musculacion': turnos libres por hora, sin elegir profesor
     -- 'clase': el alumno elige profesor y horario
     tipo         ENUM('musculacion', 'clase') NOT NULL DEFAULT 'clase',
-    activo       TINYINT(1) NOT NULL DEFAULT 1
+    activo       TINYINT NOT NULL DEFAULT 1
 );
 
 -- Clase: una actividad dictada por un profesor (ej: Pilates con Marcos).
@@ -68,7 +68,7 @@ CREATE TABLE clases (
     id_clase     INT PRIMARY KEY AUTO_INCREMENT,
     id_actividad INT NOT NULL,
     id_profesor  INT NULL,
-    activo       TINYINT(1) NOT NULL DEFAULT 1,
+    activo       TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (id_actividad) REFERENCES actividades (id_actividad),
     FOREIGN KEY (id_profesor)  REFERENCES usuarios (id_usuario)
 );
@@ -82,9 +82,23 @@ CREATE TABLE horarios_clase (
     hora_inicio  TIME NOT NULL,
     hora_fin     TIME NOT NULL,
     cupo_maximo  INT NOT NULL CHECK (cupo_maximo > 0),
-    activo       TINYINT(1) NOT NULL DEFAULT 1,
+    activo       TINYINT NOT NULL DEFAULT 1,
     CHECK (hora_fin > hora_inicio),
     FOREIGN KEY (id_clase) REFERENCES clases (id_clase)
+);
+
+-- Turnos de trabajo de los profesores en la sala de musculación.
+-- Solo informativo: se muestra en la portada. El alumno no elige profesor al reservar.
+CREATE TABLE profesores_sala (
+    id_profesor_sala INT PRIMARY KEY AUTO_INCREMENT,
+    id_actividad     INT NOT NULL,                 -- actividad de tipo 'musculacion'
+    id_profesor      INT NOT NULL,
+    dia_semana       TINYINT NOT NULL CHECK (dia_semana BETWEEN 1 AND 7),
+    hora_inicio      TIME NOT NULL,
+    hora_fin         TIME NOT NULL,
+    CHECK (hora_fin > hora_inicio),
+    FOREIGN KEY (id_actividad) REFERENCES actividades (id_actividad),
+    FOREIGN KEY (id_profesor)  REFERENCES usuarios (id_usuario)
 );
 
 -- ---------------------------------------------------------------------
@@ -99,7 +113,7 @@ CREATE TABLE suscripciones (
     veces_por_semana TINYINT NOT NULL CHECK (veces_por_semana BETWEEN 1 AND 7),
     cantidad_turnos  INT NOT NULL CHECK (cantidad_turnos > 0),   -- ej: 12 / 72 / 144
     precio           DECIMAL(10,2) NOT NULL,
-    activo           TINYINT(1) NOT NULL DEFAULT 1,
+    activo           TINYINT NOT NULL DEFAULT 1,
     FOREIGN KEY (id_actividad) REFERENCES actividades (id_actividad)
 );
 
@@ -188,7 +202,7 @@ CREATE TABLE ejercicios (
     nombre         VARCHAR(100) NOT NULL UNIQUE,
     grupo_muscular VARCHAR(50)  NOT NULL,
     descripcion    TEXT NULL,
-    activo         TINYINT(1) NOT NULL DEFAULT 1
+    activo         TINYINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE rutinas (
@@ -196,7 +210,7 @@ CREATE TABLE rutinas (
     id_alumno      INT NOT NULL,
     id_creador     INT NULL,                    -- admin/profe que la armó
     nombre         VARCHAR(80) NULL,
-    activa         TINYINT(1) NOT NULL DEFAULT 1,
+    activa         TINYINT NOT NULL DEFAULT 1,
     fecha_creacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_alumno)  REFERENCES usuarios (id_usuario),
     FOREIGN KEY (id_creador) REFERENCES usuarios (id_usuario)
@@ -229,7 +243,7 @@ CREATE TABLE premios (
     descripcion  TEXT NULL,
     valor_puntos INT NOT NULL CHECK (valor_puntos > 0),
     stock        INT NULL,                      -- NULL = ilimitado
-    activo       TINYINT(1) NOT NULL DEFAULT 1
+    activo       TINYINT NOT NULL DEFAULT 1
 );
 
 -- Canjes realizados por los alumnos.

@@ -13,6 +13,7 @@
 
 USE gimnasio;
 SET NAMES utf8mb4;
+-- Desactiva la protección de Workbench durante el script (se reactiva al final)
 SET SQL_SAFE_UPDATES = 0;
 
 -- Tabla auxiliar con los números del 1 al 45, para generar fechas pasadas
@@ -43,7 +44,10 @@ VALUES
 (9,  40333444, 'Lucía',    'Fernández', 'lucia@prueba.com',    @clave, 3, '291 5333444', '2001-01-20', 'F'),
 (10, 40444555, 'Pedro',    'Martínez',  'pedro@prueba.com',    @clave, 3, '291 5444555', '1987-11-30', 'M'),
 (11, 40555666, 'Sofía',    'García',    'sofia@prueba.com',    @clave, 3, '291 5555666', '2003-07-08', 'F'),
-(12, 40666777, 'Tomás',    'Romero',    'tomas@prueba.com',    @clave, 3, '291 5666777', '1979-03-15', 'M');
+(12, 40666777, 'Tomás',    'Romero',    'tomas@prueba.com',    @clave, 3, '291 5666777', '1979-03-15', 'M'),
+-- Profesores de sala de musculación
+(13, 30666777, 'Cristian', 'Paz',       'cristian@prueba.com', @clave, 2, '291 4666777', '1993-12-05', 'M'),
+(14, 30777888, 'Paula',    'Vega',      'paula@prueba.com',    @clave, 2, '291 4777888', '1991-05-21', 'F');
 
 -- ---------------------------------------------------------------------
 -- ACTIVIDADES Y CLASES
@@ -87,6 +91,16 @@ INSERT INTO horarios_clase (id_clase, dia_semana, hora_inicio, hora_fin, cupo_ma
 (5, 1, '20:00', '21:00', 12), -- Spinning Baltazar: lunes
 (5, 3, '20:00', '21:00', 12), -- Spinning Baltazar: miércoles
 (5, 5, '20:00', '21:00', 12); -- Spinning Baltazar: viernes
+
+-- Profesores de sala de musculación (turno mañana y turno tarde)
+INSERT INTO profesores_sala (id_actividad, id_profesor, dia_semana, hora_inicio, hora_fin)
+SELECT 1, p.id_profesor, d.dia, p.desde, p.hasta
+FROM (SELECT 1 AS dia UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) AS d
+CROSS JOIN (
+  SELECT 2 AS id_profesor, '08:00:00' AS desde, '15:00:00' AS hasta   -- Marcos: mañana
+  UNION ALL SELECT 13, '08:00:00', '12:00:00'                         -- Cristian: mañana
+  UNION ALL SELECT 14, '15:00:00', '22:00:00'                         -- Paula: tarde
+) AS p;
 
 -- ---------------------------------------------------------------------
 -- SUSCRIPCIONES (semestral -20%, anual -30%)
