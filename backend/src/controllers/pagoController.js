@@ -10,6 +10,11 @@ const client = new MercadoPagoConfig({
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// Mercado Pago no acepta direcciones localhost como páginas de regreso.
+// Mientras se trabaje en la computadora, el pago se confirma con "verificarPagos".
+const FRONTEND_ES_LOCAL = /localhost|127\.0\.0\.1/.test(FRONTEND_URL);
+const HORAS_VENCIMIENTO_PENDIENTE = 72;
+
 // ==========================================================
 // FUNCIONES AUXILIARES
 // ==========================================================
@@ -238,14 +243,18 @@ const crearPreferenciaPago = async (req, res) => {
         currency_id: 'ARS'
       }],
       payer: { email: usuarios[0].mail },
-      external_reference: String(id_pago),
-      back_urls: {
+      external_reference: String(id_pago)
+    };
+
+    // Las páginas de regreso solo se envían con una dirección pública (no localhost)
+    if (!FRONTEND_ES_LOCAL) {
+      cuerpo.back_urls = {
         success: `${FRONTEND_URL}/pago-exitoso`,
         failure: `${FRONTEND_URL}/pago-fallido`,
         pending: `${FRONTEND_URL}/pago-pendiente`
-      },
-      auto_return: 'approved'
-    };
+      };
+      cuerpo.auto_return = 'approved';
+    }
 
     // El webhook solo funciona con una dirección pública (no con localhost).
     // Si está configurada en el .env, se le indica a Mercado Pago dónde avisar.
@@ -295,6 +304,62 @@ const confirmarPago = async (req, res) => {
   } catch (error) {
     console.error('Error al confirmar pago:', error);
     return res.status(500).json({ mensaje: 'Error al verificar el pago con Mercado Pago.' });
+  }
+};
+
+// ==========================================================
+// 3 bis. VERIFICAR PAGOS PENDIENTES (usuario logueado)
+// ==========================================================
+// Busca en Mercado Pago los pagos que el usuario dejó iniciados y actualiza
+// su estado. Funciona aunque Mercado Pago no pueda volver a la página
+// (como pasa en localhost) y aunque el webhook no llegue.
+// Los pendientes sin ningún intento de pago después de 72 horas se dan por vencidos.
+const verificarPagos = async (req, res) => {
+  try {
+    const [pendientes] = await db.query(`
+      SELECT id_pago, TIMESTAMPDIFF(HOUR, fecha_pago, NOW()) AS horas
+      FROM pagos
+      WHERE id_usuario = ? AND estado = 'pendiente' AND metodo_pago = 'mercadopago'
+      ORDER BY id_pago DESC
+      LIMIT 10
+    `, [req.usuario.id_usuario]);
+
+    let aprobados = 0;
+    let siguenPendientes = 0;
+    let errores = 0;
+
+    for (const pago of pendientes) {
+      try {
+        const busqueda = await new Payment(client).search({
+          options: { external_reference: String(pago.id_pago), sort: 'date_created', criteria: 'desc' }
+        });
+        const resultados = busqueda.results || [];
+
+        if (resultados.length > 0) {
+          const elegido = resultados.find((r) => r.status === 'approved') || resultados[0];
+          const resultado = await procesarPagoMercadoPago(elegido.id);
+          if (resultado?.estado === 'aprobado') aprobados++;
+          else if (resultado?.estado === 'pendiente') siguenPendientes++;
+        } else if (pago.horas >= HORAS_VENCIMIENTO_PENDIENTE) {
+          await db.query("UPDATE pagos SET estado = 'rechazado' WHERE id_pago = ? AND estado = 'pendiente'", [pago.id_pago]);
+        } else {
+          siguenPendientes++;
+        }
+      } catch (error) {
+        errores++;
+        console.error(`Error al verificar el pago ${pago.id_pago}:`, error.message || error);
+      }
+    }
+
+    let mensaje = 'No hay pagos pendientes de verificar.';
+    if (aprobados > 0) mensaje = '¡Tu pago se acreditó! Tu abono ya está activo.';
+    else if (siguenPendientes > 0) mensaje = 'Todavía no vemos el pago acreditado. Si ya pagaste, esperá unos minutos y volvé a verificar.';
+    else if (errores > 0) mensaje = 'No se pudo consultar Mercado Pago en este momento. Probá de nuevo más tarde.';
+
+    return res.json({ aprobados, pendientes: siguenPendientes, errores, mensaje });
+  } catch (error) {
+    console.error('Error al verificar pagos:', error);
+    return res.status(500).json({ mensaje: 'Error al verificar los pagos con Mercado Pago.' });
   }
 };
 
@@ -421,6 +486,7 @@ module.exports = {
   registrarPagoPresencial,
   crearPreferenciaPago,
   confirmarPago,
+  verificarPagos,
   recibirWebhook,
   listarPagos,
   obtenerPagoPorId,

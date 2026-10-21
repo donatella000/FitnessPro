@@ -74,7 +74,7 @@ export default function ClasesDictadas() {
         <div className="tarjetas">
           <div className="tarjeta"><span className="tarjeta__titulo">Anotados</span><strong className="tarjeta__valor">{elegida.inscriptos}</strong></div>
           <div className="tarjeta"><span className="tarjeta__titulo">Asistieron</span><strong className="tarjeta__valor">{elegida.asistieron}</strong></div>
-          <div className="tarjeta"><span className="tarjeta__titulo">Asistencia efectiva</span><strong className="tarjeta__valor">{elegida.porcentaje_asistencia}%</strong></div>
+          <div className="tarjeta"><span className="tarjeta__titulo">Porcentaje de asistencia</span><strong className="tarjeta__valor">{elegida.porcentaje_asistencia}%</strong></div>
         </div>
 
         {!alumnos ? (
@@ -153,7 +153,7 @@ export default function ClasesDictadas() {
                 <th>Profesor</th>
                 <th>Anotados</th>
                 <th>Asistieron</th>
-                <th>Asistencia</th>
+                <th>Porcentaje de asistencia</th>
               </tr>
             </thead>
             <tbody>

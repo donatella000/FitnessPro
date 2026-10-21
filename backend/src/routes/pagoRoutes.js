@@ -4,6 +4,7 @@ const {
   registrarPagoPresencial,
   crearPreferenciaPago,
   confirmarPago,
+  verificarPagos,
   recibirWebhook,
   listarPagos,
   obtenerPagoPorId,
@@ -24,6 +25,7 @@ router.use(verificarToken);
 // ==========================================
 router.post('/crear-preferencia', crearPreferenciaPago); // genera el link de pago
 router.post('/confirmar', confirmarPago);                // verificación al volver de Mercado Pago
+router.post('/verificar', verificarPagos);               // revisa los pagos iniciados que siguen pendientes
 
 // ==========================================
 // 3. CONSULTAS

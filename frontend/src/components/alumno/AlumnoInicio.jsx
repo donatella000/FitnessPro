@@ -11,7 +11,10 @@ export default function AlumnoInicio({ onIr }) {
   useEffect(() => {
     let cancelado = false;
 
-    api.get('/dashboard/mi-abono')
+    // Antes de mostrar el abono, se revisa si se acreditó algún pago de Mercado Pago
+    api.post('/pagos/verificar')
+      .catch(() => {})
+      .then(() => api.get('/dashboard/mi-abono'))
       .then(({ data: respuesta }) => {
         if (!cancelado) setData(respuesta);
       })

@@ -345,3 +345,12 @@
     grid-column: 1;
   }
 }
+
+/* Aviso mientras el alumno paga en Mercado Pago */
+.resumen--espera {
+  margin: 0 0 28px;
+}
+
+.alumno__pendiente {
+  align-items: center;
+}

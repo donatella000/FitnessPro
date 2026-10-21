@@ -120,7 +120,7 @@ export default function EstadisticasGestion() {
         {vista === 'profesores' && datos && (
           <>
             <p className="seccion__ayuda">
-              Ordenados por asistencias cumplidas en sus clases. Musculación no se incluye porque el alumno no elige profesor.
+              Ordenados por cantidad de asistencias en sus clases. Musculación no se incluye porque el alumno no elige profesor.
             </p>
             <section className="panel-dato panel-dato--ancho">
               <Barras completo datos={datos.profesores_mas_elegidos} etiqueta={(d) => d.profesor}
@@ -128,7 +128,7 @@ export default function EstadisticasGestion() {
             </section>
             <div className="tabla-contenedor" style={{ marginTop: 20 }}>
               <table className="tabla">
-                <thead><tr><th>#</th><th>Profesor</th><th>Asistencias cumplidas</th><th>Turnos reservados</th><th>Asistencia efectiva</th></tr></thead>
+                <thead><tr><th>#</th><th>Profesor</th><th>Cantidad de asistencias</th><th>Turnos reservados</th><th>Porcentaje de asistencia</th></tr></thead>
                 <tbody>
                   {datos.profesores_mas_elegidos.map((p, i) => (
                     <tr key={p.id_usuario}>
@@ -242,7 +242,7 @@ export default function EstadisticasGestion() {
           onClick={() => abrir('evolucion', 'recaudacion')}
         />
         <Tarjeta
-          titulo="Asistencia efectiva"
+          titulo="Porcentaje de asistencia"
           valor={`${asistencia.porcentaje_asistencia}%`}
           detalle={`${asistencia.asistidos} asistencias y ${asistencia.ausentes} ausencias`}
           onClick={() => abrir('evolucion', 'asistencia')}
@@ -262,7 +262,7 @@ export default function EstadisticasGestion() {
         <Tarjeta
           titulo="Profesor más elegido"
           valor={datos.profesor_mas_elegido || '-'}
-          detalle={datos.profesor_mas_elegido ? `${datos.profesores_mas_elegidos[0].asistencias} asistencias cumplidas` : 'Sin asistencias en el período'}
+          detalle={datos.profesor_mas_elegido ? `${datos.profesores_mas_elegidos[0].asistencias} asistencias en sus clases` : 'Sin asistencias en el período'}
           onClick={() => abrir('profesores')}
         />
       </div>

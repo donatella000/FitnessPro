@@ -12,13 +12,13 @@ const METRICAS = {
     mejor: 'recaudacion',
   },
   asistencias: {
-    titulo: 'Asistencias cumplidas',
+    titulo: 'Cantidad de asistencias',
     valor: (m) => m.asistidos,
     formato: (v) => v,
     mejor: 'asistencias',
   },
   asistencia: {
-    titulo: 'Asistencia efectiva',
+    titulo: 'Porcentaje de asistencia',
     valor: (m) => m.porcentaje_asistencia,
     formato: (v) => `${v}%`,
     mejor: null,
@@ -55,7 +55,7 @@ export default function Evolucion({ metricaInicial = 'recaudacion' }) {
   const meses = datos.meses;
   const mejorMes = m.mejor ? datos.mejor_mes[m.mejor] : null;
 
-  // Para el porcentaje, el mejor mes es el de mayor asistencia efectiva con datos
+  // Para el porcentaje, el mejor mes es el de mayor porcentaje de asistencia con datos
   const mejorPorcentaje = metrica === 'asistencia'
     ? meses.filter((x) => x.asistidos + x.ausentes > 0).reduce((a, b) => (!a || b.porcentaje_asistencia > a.porcentaje_asistencia ? b : a), null)
     : null;
@@ -95,13 +95,13 @@ export default function Evolucion({ metricaInicial = 'recaudacion' }) {
       <div className="tarjetas">
         <Tarjeta titulo={`Recaudación ${datos.anio}`} valor={formatearPrecio(t.recaudacion)} />
         <Tarjeta
-          titulo={`Asistencias ${datos.anio}`}
+          titulo={`Cantidad de asistencias ${datos.anio}`}
           valor={t.asistidos}
-          detalle={`Asistencia efectiva del ${totalAsist ? Math.round((t.asistidos / totalAsist) * 1000) / 10 : 0}%`}
+          detalle={`Porcentaje de asistencia: ${totalAsist ? Math.round((t.asistidos / totalAsist) * 1000) / 10 : 0}%`}
         />
         <Tarjeta titulo={`Nuevos inscriptos ${datos.anio}`} valor={t.nuevos_inscriptos} />
         <Tarjeta
-          titulo={metrica === 'asistencia' ? 'Mes con mejor asistencia' : `Mejor mes en ${m.titulo.toLowerCase()}`}
+          titulo={metrica === 'asistencia' ? 'Mes con mayor porcentaje de asistencia' : `Mejor mes en ${m.titulo.toLowerCase()}`}
           valor={mejorMes ? mejorMes.nombre : mejorPorcentaje ? mejorPorcentaje.nombre : '-'}
           detalle={mejorMes ? m.formato(mejorMes.valor) : mejorPorcentaje ? `${mejorPorcentaje.porcentaje_asistencia}%` : 'Sin datos todavía'}
         />
@@ -129,9 +129,9 @@ export default function Evolucion({ metricaInicial = 'recaudacion' }) {
                 <th>Mes</th>
                 <th>Recaudación</th>
                 <th>Pagos</th>
-                <th>Asistencias</th>
+                <th>Cantidad de asistencias</th>
                 <th>Ausencias</th>
-                <th>Asistencia efectiva</th>
+                <th>Porcentaje de asistencia</th>
                 <th>Nuevos inscriptos</th>
               </tr>
             </thead>
@@ -162,8 +162,8 @@ export default function Evolucion({ metricaInicial = 'recaudacion' }) {
                 <th>Año</th>
                 <th>Recaudación</th>
                 <th>Pagos</th>
-                <th>Asistencias</th>
-                <th>Asistencia efectiva</th>
+                <th>Cantidad de asistencias</th>
+                <th>Porcentaje de asistencia</th>
                 <th>Nuevos inscriptos</th>
               </tr>
             </thead>

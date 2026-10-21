@@ -12,6 +12,9 @@ export default function AlumnoPagos() {
   const [aviso, setAviso] = useState(null);
   const [elegida, setElegida] = useState(null);
   const [pagando, setPagando] = useState(false);
+  const [esperando, setEsperando] = useState(false); // ya abrió Mercado Pago
+  const [pendientes, setPendientes] = useState(0);
+  const [verificando, setVerificando] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
@@ -30,9 +33,37 @@ export default function AlumnoPagos() {
     }
   }, []);
 
+  // Consulta a Mercado Pago los pagos iniciados que siguen pendientes
+  const verificar = useCallback(async (silencioso = false) => {
+    setVerificando(true);
+    try {
+      const { data } = await api.post('/pagos/verificar');
+      setPendientes(data.pendientes);
+      if (data.aprobados > 0) {
+        setEsperando(false);
+        setElegida(null);
+        setAviso({ tipo: 'ok', texto: data.mensaje });
+      } else if (!silencioso) {
+        setAviso({ tipo: data.errores ? 'error' : 'ok', texto: data.mensaje });
+      }
+      return data;
+    } catch (error) {
+      if (!silencioso) setAviso({ tipo: 'error', texto: mensajeDeError(error) });
+      return null;
+    } finally {
+      setVerificando(false);
+    }
+  }, []);
+
   useEffect(() => {
-    cargar();
-  }, [cargar]);
+    // Al entrar, primero se revisan los pagos pendientes y después se cargan los datos
+    verificar(true).finally(cargar);
+  }, [verificar, cargar]);
+
+  const verificarYRecargar = async () => {
+    await verificar(false);
+    await cargar();
+  };
 
   if (cargando) return <p className="dash__status">Cargando…</p>;
 
@@ -52,12 +83,21 @@ export default function AlumnoPagos() {
   const pagar = async () => {
     setPagando(true);
     setAviso(null);
+    // La pestaña se abre en el momento del clic para que el navegador no la bloquee
+    const ventana = window.open('', '_blank');
     try {
       const { data } = await api.post('/pagos/crear-preferencia', { id_suscripcion: elegida.id_suscripcion });
-      // Lleva al alumno a la página de pago de Mercado Pago
-      window.location.href = data.init_point;
+      if (ventana) {
+        ventana.location.href = data.init_point;
+        setEsperando(true);
+      } else {
+        // Si el navegador bloqueó la pestaña nueva, se abre en esta misma
+        window.location.href = data.init_point;
+      }
     } catch (error) {
+      if (ventana) ventana.close();
       setAviso({ tipo: 'error', texto: mensajeDeError(error) });
+    } finally {
       setPagando(false);
     }
   };
@@ -67,6 +107,30 @@ export default function AlumnoPagos() {
   return (
     <>
       <Aviso aviso={aviso} onCerrar={() => setAviso(null)} />
+
+      {esperando && (
+        <div className="resumen resumen--espera">
+          <div>
+            <h3 className="resumen__titulo">Completá el pago en Mercado Pago</h3>
+            <p className="resumen__linea">
+              Se abrió una pestaña nueva con Mercado Pago. Cuando termines de pagar, volvé a esta pestaña y tocá
+              "Verificar mi pago" para activar tu abono.
+            </p>
+          </div>
+          <button type="button" className="resumen__pagar" onClick={verificarYRecargar} disabled={verificando}>
+            {verificando ? 'Verificando…' : 'Verificar mi pago'}
+          </button>
+        </div>
+      )}
+
+      {!esperando && pendientes > 0 && (
+        <div className="aviso aviso--ok alumno__pendiente">
+          <span>Tenés un pago iniciado en Mercado Pago que todavía no se acreditó. Si ya pagaste, verificalo.</span>
+          <button type="button" className="btn btn--chico" onClick={verificarYRecargar} disabled={verificando}>
+            {verificando ? 'Verificando…' : 'Verificar mi pago'}
+          </button>
+        </div>
+      )}
 
       <section className="alumno__seccion">
         <h2 className="seccion__titulo">Elegí tu suscripción</h2>
