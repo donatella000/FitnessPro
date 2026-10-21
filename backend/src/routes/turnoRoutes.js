@@ -9,6 +9,7 @@ const {
   misTurnos,
   listarTurnos,
   marcarAsistencia,
+  quitarAsistencia,
   ingresoMolinete,
   aperturaManual
 } = require('../controllers/turnoController');
@@ -41,6 +42,7 @@ router.delete('/:id', cancelarTurno);             // cancelar (alumno: los suyos
 // ==========================================
 router.get('/', permitirRoles(1, 2), listarTurnos);                         // turnos del día y filtros
 router.post('/asignar', permitirRoles(1, 2), asignarTurno);                 // anotar a un alumno
-router.post('/:id/asistencia', permitirRoles(1, 2), marcarAsistencia);      // asistencia manual
+router.post('/:id/asistencia', permitirRoles(1, 2), marcarAsistencia);      // marcar presente (solo horarios ya empezados)
+router.delete('/:id/asistencia', permitirRoles(1, 2), quitarAsistencia);    // corregir: marcar ausente
 
 module.exports = router;

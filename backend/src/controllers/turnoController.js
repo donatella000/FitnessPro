@@ -168,6 +168,14 @@ const registrarAsistencia = async (conexion, { id_turno, tipo, registrado_por = 
   if (turno.estado === 'asistido') return { error: 'La asistencia de este turno ya estaba registrada.' };
   if (turno.estado === 'cancelado') return { error: 'El turno está cancelado.' };
 
+  const [abonos] = await conexion.query(
+    'SELECT turnos_usados, turnos_totales FROM suscripciones_alumno WHERE id_suscripcion_alumno = ?',
+    [turno.id_suscripcion_alumno]
+  );
+  if (abonos[0] && abonos[0].turnos_usados >= abonos[0].turnos_totales) {
+    return { error: 'El abono de este turno ya no tiene turnos disponibles.' };
+  }
+
   const puntos = await leerConfig('puntos_por_asistencia', 0);
 
   await conexion.query("UPDATE turnos SET estado = 'asistido' WHERE id_turno = ?", [id_turno]);
@@ -600,21 +608,23 @@ const listarTurnos = async (req, res) => {
 // 8. ASISTENCIA MANUAL (Admin y Profesor)
 // ==========================================================
 // Para cuando el alumno no pudo ingresar por el molinete.
-// Solo para turnos de hoy o de días anteriores.
+// Solo para turnos cuyo horario ya empezó (nunca para horarios futuros).
 const marcarAsistencia = async (req, res) => {
   const { id } = req.params;
   const conexion = await db.getConnection();
 
   try {
-    const [turnos] = await conexion.query(
-      'SELECT fecha <= CURDATE() AS ya_paso FROM turnos WHERE id_turno = ?',
-      [id]
-    );
+    const [turnos] = await conexion.query(`
+      SELECT TIMESTAMP(t.fecha, h.hora_inicio) <= NOW() AS ya_empezo
+      FROM turnos t
+      INNER JOIN horarios_clase h ON t.id_horario = h.id_horario
+      WHERE t.id_turno = ?
+    `, [id]);
     if (turnos.length === 0) {
       return res.status(404).json({ mensaje: 'Turno no encontrado.' });
     }
-    if (!turnos[0].ya_paso) {
-      return res.status(400).json({ mensaje: 'No se puede registrar la asistencia de un turno futuro.' });
+    if (!turnos[0].ya_empezo) {
+      return res.status(400).json({ mensaje: 'Solo se puede registrar la asistencia de turnos que ya empezaron.' });
     }
 
     await conexion.beginTransaction();
@@ -633,6 +643,72 @@ const marcarAsistencia = async (req, res) => {
     await conexion.rollback();
     console.error('Error al marcar asistencia:', error);
     return res.status(500).json({ mensaje: 'Error interno del servidor al registrar la asistencia.' });
+  } finally {
+    conexion.release();
+  }
+};
+
+// ==========================================================
+// 8 bis. QUITAR UNA ASISTENCIA (Admin y Profesor)
+// ==========================================================
+// Corrige una asistencia registrada por error: el turno vuelve a quedar
+// como no asistido, se devuelve el turno al abono y se descuentan los
+// puntos que se habían sumado (sin dejar el saldo en negativo).
+const quitarAsistencia = async (req, res) => {
+  const { id } = req.params;
+  const conexion = await db.getConnection();
+
+  try {
+    await conexion.beginTransaction();
+
+    const [turnos] = await conexion.query(
+      'SELECT id_turno, id_usuario, estado, id_suscripcion_alumno FROM turnos WHERE id_turno = ? FOR UPDATE',
+      [id]
+    );
+    if (turnos.length === 0) {
+      await conexion.rollback();
+      return res.status(404).json({ mensaje: 'Turno no encontrado.' });
+    }
+    const turno = turnos[0];
+    if (turno.estado !== 'asistido') {
+      await conexion.rollback();
+      return res.status(400).json({ mensaje: 'Este turno no tiene una asistencia registrada.' });
+    }
+
+    const [asistencias] = await conexion.query(
+      'SELECT id_asistencia, puntos_otorgados FROM asistencias WHERE id_turno = ?',
+      [id]
+    );
+    const puntos = asistencias[0]?.puntos_otorgados || 0;
+
+    await conexion.query("UPDATE turnos SET estado = 'reservado' WHERE id_turno = ?", [id]);
+    await conexion.query('DELETE FROM asistencias WHERE id_turno = ?', [id]);
+    await conexion.query(
+      'UPDATE suscripciones_alumno SET turnos_usados = GREATEST(turnos_usados - 1, 0) WHERE id_suscripcion_alumno = ?',
+      [turno.id_suscripcion_alumno]
+    );
+
+    let descontados = 0;
+    if (puntos > 0) {
+      const [usuarios] = await conexion.query('SELECT puntos FROM usuarios WHERE id_usuario = ? FOR UPDATE', [turno.id_usuario]);
+      descontados = Math.min(puntos, usuarios[0].puntos);
+      if (descontados > 0) {
+        await conexion.query('UPDATE usuarios SET puntos = puntos - ? WHERE id_usuario = ?', [descontados, turno.id_usuario]);
+        await conexion.query(`
+          INSERT INTO movimientos_puntos (id_usuario, cantidad, motivo, descripcion, registrado_por)
+          VALUES (?, ?, 'ajuste', ?, ?)
+        `, [turno.id_usuario, -descontados, `Asistencia anulada del turno #${id}`, req.usuario.id_usuario]);
+      }
+    }
+
+    await conexion.commit();
+    return res.json({
+      mensaje: `Asistencia quitada. Se devolvió el turno al abono${descontados ? ` y se descontaron ${descontados} punto(s)` : ''}.`
+    });
+  } catch (error) {
+    await conexion.rollback();
+    console.error('Error al quitar asistencia:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al quitar la asistencia.' });
   } finally {
     conexion.release();
   }
@@ -766,6 +842,7 @@ module.exports = {
   misTurnos,
   listarTurnos,
   marcarAsistencia,
+  quitarAsistencia,
   ingresoMolinete,
   aperturaManual
 };

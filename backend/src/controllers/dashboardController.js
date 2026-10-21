@@ -221,18 +221,25 @@ const obtenerEstadisticas = async (req, res) => {
     }
 
     // ---------- Profesores más elegidos ----------
-    // Cantidad de turnos reservados en sus clases (sin cancelados)
+    // Se ordenan por asistencias cumplidas en sus clases (no por reservas)
     const [profesores] = await db.query(`
       SELECT u.id_usuario, CONCAT(u.nombre, ' ', u.apellido) AS profesor,
-             COUNT(*) AS turnos, SUM(t.estado = 'asistido') AS asistencias
+             SUM(t.estado = 'asistido') AS asistencias,
+             COUNT(*) AS turnos
       FROM turnos t
       INNER JOIN horarios_clase h ON t.id_horario = h.id_horario
       INNER JOIN clases c ON h.id_clase = c.id_clase
       INNER JOIN usuarios u ON c.id_profesor = u.id_usuario
       WHERE u.id_rol = ? AND t.estado <> 'cancelado' AND t.fecha BETWEEN ? AND ?
       GROUP BY u.id_usuario
-      ORDER BY turnos DESC
+      ORDER BY asistencias DESC, turnos DESC
     `, [ROL_PROFESOR, desde, hasta]);
+
+    // ---------- Inscripciones nuevas del período ----------
+    const [nuevos] = await db.query(`
+      SELECT COUNT(*) AS cantidad FROM usuarios
+      WHERE id_rol = ? AND DATE(fecha_registro) BETWEEN ? AND ?
+    `, [ROL_ALUMNO, desde, hasta]);
 
     return res.json({
       periodo: { desde, hasta },
@@ -258,7 +265,8 @@ const obtenerEstadisticas = async (req, res) => {
       premios_mas_canjeados: premios.map((p) => ({ ...p, puntos: Number(p.puntos) })),
       horarios_mas_concurridos: horariosPorActividad,
       profesores_mas_elegidos: profesores.map((p) => ({ ...p, asistencias: Number(p.asistencias) })),
-      profesor_mas_elegido: profesores.length ? profesores[0].profesor : null
+      profesor_mas_elegido: profesores.length && Number(profesores[0].asistencias) > 0 ? profesores[0].profesor : null,
+      nuevos_inscriptos: nuevos[0].cantidad
     });
   } catch (error) {
     console.error('Error al obtener estadísticas:', error);
@@ -266,4 +274,246 @@ const obtenerEstadisticas = async (req, res) => {
   }
 };
 
-module.exports = { obtenerMiAbono, obtenerEstadisticas };
+// ==========================================================
+// 3. EVOLUCIÓN MES A MES Y AÑO A AÑO (Solo Admin)
+// ==========================================================
+// GET /api/dashboard/evolucion?anio=2026
+// Los datos salen de los registros que ya guarda el sistema (pagos,
+// turnos y usuarios), así que el historial se conserva solo.
+const NOMBRES_MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+  'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+const leerMargen = async () => {
+  const [filas] = await db.query("SELECT valor FROM configuracion WHERE clave = 'margen_ingreso_minutos'");
+  return filas.length ? Number(filas[0].valor) : 10;
+};
+
+// Devuelve el elemento con el mayor valor del campo, o null si todos son cero
+const mejor = (lista, campo) => {
+  const max = lista.reduce((m, x) => (x[campo] > (m ? m[campo] : 0) ? x : m), null);
+  return max ? { mes: max.mes, nombre: max.nombre, valor: max[campo] } : null;
+};
+
+const obtenerEvolucion = async (req, res) => {
+  try {
+    const [hoy] = await db.query('SELECT YEAR(CURDATE()) AS anio, MONTH(CURDATE()) AS mes');
+    const anioActual = hoy[0].anio;
+    const anio = Number(req.query.anio) || anioActual;
+    const margen = await leerMargen();
+
+    const [recaudacion] = await db.query(`
+      SELECT MONTH(fecha_pago) AS mes, SUM(monto + recargo) AS total, COUNT(*) AS pagos
+      FROM pagos
+      WHERE estado = 'aprobado' AND YEAR(fecha_pago) = ?
+      GROUP BY MONTH(fecha_pago)
+    `, [anio]);
+
+    // Solo turnos que ya pasaron: asistidos contra ausentes
+    const [asistencia] = await db.query(`
+      SELECT MONTH(t.fecha) AS mes,
+             SUM(t.estado = 'asistido') AS asistidos,
+             SUM(t.estado = 'reservado') AS ausentes
+      FROM turnos t
+      INNER JOIN horarios_clase h ON t.id_horario = h.id_horario
+      WHERE YEAR(t.fecha) = ?
+        AND t.estado IN ('asistido', 'reservado')
+        AND TIMESTAMP(t.fecha, h.hora_inicio) + INTERVAL ? MINUTE < NOW()
+      GROUP BY MONTH(t.fecha)
+    `, [anio, margen]);
+
+    const [inscriptos] = await db.query(`
+      SELECT MONTH(fecha_registro) AS mes, COUNT(*) AS cantidad
+      FROM usuarios
+      WHERE id_rol = ? AND YEAR(fecha_registro) = ?
+      GROUP BY MONTH(fecha_registro)
+    `, [ROL_ALUMNO, anio]);
+
+    const meses = NOMBRES_MESES.map((nombre, i) => {
+      const mes = i + 1;
+      const r = recaudacion.find((x) => x.mes === mes);
+      const a = asistencia.find((x) => x.mes === mes);
+      const n = inscriptos.find((x) => x.mes === mes);
+      const asistidos = Number(a?.asistidos || 0);
+      const ausentes = Number(a?.ausentes || 0);
+      return {
+        mes,
+        nombre,
+        futuro: anio > anioActual || (anio === anioActual && mes > hoy[0].mes),
+        recaudacion: Number(r?.total || 0),
+        pagos: Number(r?.pagos || 0),
+        asistidos,
+        ausentes,
+        porcentaje_asistencia: porcentaje(asistidos, asistidos + ausentes),
+        nuevos_inscriptos: Number(n?.cantidad || 0)
+      };
+    });
+
+    // Totales por año, para comparar año a año
+    const [porAnioPagos] = await db.query(`
+      SELECT YEAR(fecha_pago) AS anio, SUM(monto + recargo) AS total, COUNT(*) AS pagos
+      FROM pagos WHERE estado = 'aprobado'
+      GROUP BY YEAR(fecha_pago)
+    `);
+    const [porAnioAsistencia] = await db.query(`
+      SELECT YEAR(t.fecha) AS anio,
+             SUM(t.estado = 'asistido') AS asistidos,
+             SUM(t.estado = 'reservado') AS ausentes
+      FROM turnos t
+      INNER JOIN horarios_clase h ON t.id_horario = h.id_horario
+      WHERE t.estado IN ('asistido', 'reservado')
+        AND TIMESTAMP(t.fecha, h.hora_inicio) + INTERVAL ? MINUTE < NOW()
+      GROUP BY YEAR(t.fecha)
+    `, [margen]);
+    const [porAnioInscriptos] = await db.query(`
+      SELECT YEAR(fecha_registro) AS anio, COUNT(*) AS cantidad
+      FROM usuarios WHERE id_rol = ?
+      GROUP BY YEAR(fecha_registro)
+    `, [ROL_ALUMNO]);
+
+    const aniosConDatos = new Set([
+      anioActual,
+      ...porAnioPagos.map((x) => x.anio),
+      ...porAnioAsistencia.map((x) => x.anio),
+      ...porAnioInscriptos.map((x) => x.anio)
+    ]);
+
+    const anios = [...aniosConDatos].sort((a, b) => b - a).map((a) => {
+      const p = porAnioPagos.find((x) => x.anio === a);
+      const t = porAnioAsistencia.find((x) => x.anio === a);
+      const n = porAnioInscriptos.find((x) => x.anio === a);
+      const asistidos = Number(t?.asistidos || 0);
+      const ausentes = Number(t?.ausentes || 0);
+      return {
+        anio: a,
+        recaudacion: Number(p?.total || 0),
+        pagos: Number(p?.pagos || 0),
+        asistidos,
+        ausentes,
+        porcentaje_asistencia: porcentaje(asistidos, asistidos + ausentes),
+        nuevos_inscriptos: Number(n?.cantidad || 0)
+      };
+    });
+
+    return res.json({
+      anio,
+      meses,
+      mejor_mes: {
+        recaudacion: mejor(meses, 'recaudacion'),
+        asistencias: mejor(meses, 'asistidos'),
+        inscripciones: mejor(meses, 'nuevos_inscriptos')
+      },
+      totales_anio: {
+        recaudacion: meses.reduce((t, m) => t + m.recaudacion, 0),
+        asistidos: meses.reduce((t, m) => t + m.asistidos, 0),
+        ausentes: meses.reduce((t, m) => t + m.ausentes, 0),
+        nuevos_inscriptos: meses.reduce((t, m) => t + m.nuevos_inscriptos, 0)
+      },
+      anios
+    });
+  } catch (error) {
+    console.error('Error al obtener la evolución:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al obtener la evolución.' });
+  }
+};
+
+// ==========================================================
+// 4. CLASES DICTADAS (Solo Admin)
+// ==========================================================
+// GET /api/dashboard/clases-dictadas?desde=AAAA-MM-DD&hasta=AAAA-MM-DD&id_actividad=2
+// Cada fila es una clase ya finalizada (un horario en una fecha concreta)
+// con cuántos alumnos se anotaron y cuántos asistieron.
+const obtenerClasesDictadas = async (req, res) => {
+  try {
+    let { desde, hasta } = req.query;
+    const { id_actividad } = req.query;
+
+    if ((desde && !REGEX_FECHA.test(desde)) || (hasta && !REGEX_FECHA.test(hasta))) {
+      return res.status(400).json({ mensaje: 'Las fechas deben tener el formato AAAA-MM-DD.' });
+    }
+    if (!desde || !hasta) {
+      const [rango] = await db.query(`
+        SELECT DATE_FORMAT(CURDATE() - INTERVAL 30 DAY, '%Y-%m-%d') AS desde,
+               DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS hasta
+      `);
+      desde = desde || rango[0].desde;
+      hasta = hasta || rango[0].hasta;
+    }
+
+    const condiciones = [
+      "t.estado <> 'cancelado'",
+      't.fecha BETWEEN ? AND ?',
+      'TIMESTAMP(t.fecha, h.hora_fin) < NOW()'
+    ];
+    const valores = [desde, hasta];
+    if (id_actividad) {
+      condiciones.push('c.id_actividad = ?');
+      valores.push(id_actividad);
+    }
+
+    const [clases] = await db.query(`
+      SELECT t.id_horario, DATE_FORMAT(t.fecha, '%Y-%m-%d') AS fecha, h.dia_semana,
+             h.hora_inicio, h.hora_fin, h.cupo_maximo,
+             a.nombre AS actividad, CONCAT(u.nombre, ' ', u.apellido) AS profesor,
+             COUNT(*) AS inscriptos,
+             SUM(t.estado = 'asistido') AS asistieron
+      FROM turnos t
+      INNER JOIN horarios_clase h ON t.id_horario = h.id_horario
+      INNER JOIN clases c ON h.id_clase = c.id_clase
+      INNER JOIN actividades a ON c.id_actividad = a.id_actividad
+      LEFT JOIN usuarios u ON c.id_profesor = u.id_usuario
+      WHERE ${condiciones.join(' AND ')}
+      GROUP BY t.id_horario, t.fecha
+      ORDER BY t.fecha DESC, h.hora_inicio DESC
+      LIMIT 300
+    `, valores);
+
+    return res.json({
+      periodo: { desde, hasta },
+      clases: clases.map((c) => {
+        const asistieron = Number(c.asistieron);
+        return {
+          ...c,
+          dia_nombre: NOMBRES_DIAS[c.dia_semana],
+          hora_inicio: String(c.hora_inicio).slice(0, 5),
+          hora_fin: String(c.hora_fin).slice(0, 5),
+          asistieron,
+          porcentaje_asistencia: porcentaje(asistieron, c.inscriptos)
+        };
+      })
+    });
+  } catch (error) {
+    console.error('Error al obtener clases dictadas:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al obtener las clases dictadas.' });
+  }
+};
+
+// GET /api/dashboard/clases-dictadas/detalle?id_horario=12&fecha=AAAA-MM-DD
+// Lista de alumnos anotados en esa clase y si asistieron.
+const obtenerDetalleClaseDictada = async (req, res) => {
+  try {
+    const { id_horario, fecha } = req.query;
+    if (!id_horario || !fecha || !REGEX_FECHA.test(fecha)) {
+      return res.status(400).json({ mensaje: 'Debe indicar el horario y la fecha.' });
+    }
+
+    const [alumnos] = await db.query(`
+      SELECT t.id_turno, u.id_usuario, u.nombre, u.apellido, u.dni, t.estado,
+             a.fecha_hora AS ingreso, a.tipo AS tipo_ingreso
+      FROM turnos t
+      INNER JOIN usuarios u ON t.id_usuario = u.id_usuario
+      LEFT JOIN asistencias a ON a.id_turno = t.id_turno
+      WHERE t.id_horario = ? AND t.fecha = ?
+      ORDER BY (t.estado = 'cancelado'), u.apellido, u.nombre
+    `, [id_horario, fecha]);
+
+    return res.json(alumnos.map((al) => ({
+      ...al,
+      estado: al.estado === 'reservado' ? 'ausente' : al.estado
+    })));
+  } catch (error) {
+    console.error('Error al obtener detalle de la clase:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al obtener el detalle de la clase.' });
+  }
+};
+
+module.exports = { obtenerMiAbono, obtenerEstadisticas, obtenerEvolucion, obtenerClasesDictadas, obtenerDetalleClaseDictada };

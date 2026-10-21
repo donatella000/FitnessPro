@@ -10,6 +10,12 @@ const ESTADOS = {
   cancelado: { texto: 'Cancelado', clase: ' estado--off' },
 };
 
+// Fecha y hora actuales en formato 'AAAA-MM-DDTHH:MM:SS', según la hora local
+const ahora = () => `${hoyISO()}T${new Date().toTimeString().slice(0, 8)}`;
+
+// true si el horario del turno ya empezó (se puede marcar la asistencia)
+const yaEmpezo = (t) => `${String(t.fecha).slice(0, 10)}T${String(t.hora_inicio).slice(0, 8)}` <= ahora();
+
 // Día de la semana de una fecha 'AAAA-MM-DD': 1 = lunes ... 7 = domingo
 const diaDeSemana = (fecha) => ((new Date(`${fecha}T00:00:00Z`).getUTCDay() + 6) % 7) + 1;
 
@@ -85,7 +91,12 @@ export default function TurnosGestion() {
         etiqueta: `${c.actividad}${c.profesor ? ` con ${c.profesor}` : ''}, ${formatearHora(h.hora_inicio)} a ${formatearHora(h.hora_fin)}`,
       })));
 
-  const esPasadoOHoy = fecha <= hoyISO();
+  const quitarAsistencia = (t) => {
+    const ok = window.confirm(
+      `¿Marcar como ausente a ${t.nombre} ${t.apellido}? Se le devuelve el turno al abono y se le descuentan los puntos de esa asistencia.`
+    );
+    if (ok) ejecutar(() => api.delete(`/turnos/${t.id_turno}/asistencia`));
+  };
 
   return (
     <>
@@ -94,8 +105,9 @@ export default function TurnosGestion() {
       <section className="seccion">
         <h2 className="seccion__titulo">Turnos del día</h2>
         <p className="seccion__ayuda">
-          Usá "Registrar asistencia" cuando un alumno no pudo ingresar por el molinete. Descuenta el turno
-          de su abono y le suma los puntos, igual que el molinete.
+          Podés corregir la asistencia de cualquier turno cuyo horario ya empezó, incluso de días anteriores.
+          "Marcar presente" descuenta el turno del abono y suma los puntos, igual que el molinete.
+          "Marcar ausente" deshace una asistencia registrada por error. Los turnos futuros no se pueden marcar.
         </p>
 
         <div className="form form--compacto" style={{ marginBottom: 16 }}>
@@ -149,16 +161,21 @@ export default function TurnosGestion() {
                       <td><span className={`estado${estado.clase}`}>{estado.texto}</span></td>
                       <td>
                         <div className="tabla__acciones">
-                          {pendiente && esPasadoOHoy && (
+                          {pendiente && yaEmpezo(t) && (
                             <button
                               type="button"
                               className="btn btn--chico"
                               onClick={() => ejecutar(() => api.post(`/turnos/${t.id_turno}/asistencia`))}
                             >
-                              Registrar asistencia
+                              Marcar presente
                             </button>
                           )}
-                          {t.estado === 'reservado' && (
+                          {t.estado === 'asistido' && (
+                            <button type="button" className="btn btn--chico btn--secundario" onClick={() => quitarAsistencia(t)}>
+                              Marcar ausente
+                            </button>
+                          )}
+                          {t.estado === 'reservado' && !yaEmpezo(t) && (
                             <button
                               type="button"
                               className="btn btn--chico btn--peligro"

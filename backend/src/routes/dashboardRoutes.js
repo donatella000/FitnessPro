@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { obtenerMiAbono, obtenerEstadisticas } = require('../controllers/dashboardController');
+const {
+  obtenerMiAbono,
+  obtenerEstadisticas,
+  obtenerEvolucion,
+  obtenerClasesDictadas,
+  obtenerDetalleClaseDictada
+} = require('../controllers/dashboardController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
 router.use(verificarToken);
@@ -9,7 +15,9 @@ router.use(verificarToken);
 router.get('/mi-abono', obtenerMiAbono);
 
 // Estadísticas del gimnasio (solo Administrador)
-// Opcional: ?desde=AAAA-MM-DD&hasta=AAAA-MM-DD (por defecto, últimos 30 días)
-router.get('/estadisticas', permitirRoles(1), obtenerEstadisticas);
+router.get('/estadisticas', permitirRoles(1), obtenerEstadisticas);              // ?desde=&hasta=
+router.get('/evolucion', permitirRoles(1), obtenerEvolucion);                    // ?anio=2026
+router.get('/clases-dictadas', permitirRoles(1), obtenerClasesDictadas);         // ?desde=&hasta=&id_actividad=
+router.get('/clases-dictadas/detalle', permitirRoles(1), obtenerDetalleClaseDictada); // ?id_horario=&fecha=
 
 module.exports = router;

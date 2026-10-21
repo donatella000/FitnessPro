@@ -20,10 +20,16 @@
   color: var(--neon);
 }
 
-/* Tarjetas con los números principales */
+/* ---------- Vista de detalle ---------- */
+.estadisticas-detalle__titulo {
+  margin: 18px 0 16px;
+  font-size: 1.4rem;
+}
+
+/* ---------- Tarjetas ---------- */
 .tarjetas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 14px;
   margin-bottom: 28px;
 }
@@ -31,11 +37,25 @@
 .tarjeta {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
   padding: 18px 20px;
+  border: 0;
   border-radius: 12px;
   background: var(--neon-ink);
   color: #fff;
+  font-family: var(--font);
+  text-align: left;
+}
+
+.tarjeta--clic {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tarjeta--clic:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px var(--neon), 0 10px 24px rgba(3, 23, 10, 0.25);
 }
 
 .tarjeta__titulo {
@@ -45,20 +65,33 @@
 }
 
 .tarjeta__valor {
-  font-size: 1.9rem;
-  line-height: 1.1;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .tarjeta__detalle {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 0.82rem;
   line-height: 1.35;
 }
 
-/* Paneles con gráficos */
+.tarjeta__ver {
+  margin-top: auto;
+  padding-top: 6px;
+  color: var(--neon);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.tarjeta__ver::after {
+  content: ' →';
+}
+
+/* ---------- Paneles ---------- */
 .estadisticas__grilla {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 18px;
 }
 
@@ -66,6 +99,19 @@
   padding: 18px 20px;
   border: 1px solid rgba(3, 23, 10, 0.12);
   border-radius: 12px;
+  background: #fff;
+}
+
+.panel-dato--ancho {
+  margin-bottom: 8px;
+}
+
+.panel-dato__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .panel-dato__titulo {
@@ -73,6 +119,27 @@
   font-size: 1rem;
 }
 
+.panel-dato__cabecera .panel-dato__titulo {
+  margin: 0;
+}
+
+.panel-dato__ver {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--neon-ink);
+  font: 700 0.8rem/1 var(--font);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.panel-dato__ver::after {
+  content: ' →';
+}
+
+/* ---------- Barras horizontales ---------- */
 .barras {
   display: flex;
   flex-direction: column;
@@ -96,6 +163,20 @@
   white-space: nowrap;
 }
 
+/* En el detalle, las etiquetas se muestran enteras y las barras son más gruesas */
+.barras--completo .barras__fila {
+  grid-template-columns: minmax(140px, 32%) 1fr auto;
+  font-size: 0.95rem;
+}
+
+.barras--completo .barras__etiqueta {
+  white-space: normal;
+}
+
+.barras--completo .barras__pista {
+  height: 18px;
+}
+
 .barras__pista {
   height: 12px;
   border-radius: 999px;
@@ -109,7 +190,6 @@
   min-width: 4px;
   border-radius: 999px;
   background: var(--neon-ink);
-  box-shadow: inset 0 0 0 1px rgba(13, 255, 74, 0.4);
 }
 
 .barras__fila:first-child .barras__relleno {
@@ -122,12 +202,117 @@
   white-space: nowrap;
 }
 
-.horarios-top + .horarios-top {
-  margin-top: 16px;
+/* ---------- Columnas mes a mes ---------- */
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+  height: 260px;
+  padding-top: 8px;
+}
+
+.columnas--compacto {
+  height: 120px;
+  gap: 5px;
+}
+
+.columnas__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+}
+
+.columnas__valor {
+  min-height: 1.2em;
+  margin-bottom: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.columnas__pista {
+  display: flex;
+  align-items: flex-end;
+  flex: 1;
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: rgba(3, 23, 10, 0.05);
+}
+
+.columnas__barra {
+  display: block;
+  width: 100%;
+  min-height: 2px;
+  border-radius: 6px 6px 0 0;
+  background: var(--neon-ink);
+}
+
+.columnas__item.is-destacado .columnas__barra {
+  background: var(--neon);
+  box-shadow: inset 0 0 0 2px var(--neon-ink);
+}
+
+.columnas__item.is-apagado {
+  opacity: 0.35;
+}
+
+.columnas__etiqueta {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ---------- Tablas ---------- */
+.celda-mejor {
+  font-weight: 700;
+}
+
+.tabla--clic tbody tr {
+  cursor: pointer;
+}
+
+.tabla--clic tbody tr:hover td,
+.tabla--clic tbody tr:focus td {
+  background: rgba(13, 255, 74, 0.12);
+}
+
+.mini-barra {
+  display: inline-block;
+  width: 60px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: rgba(3, 23, 10, 0.1);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.mini-barra__relleno {
+  display: block;
+  height: 100%;
+  background: var(--neon-ink);
 }
 
 .horarios-top__actividad {
   margin: 0 0 8px;
   font-weight: 700;
   font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .columnas {
+    height: 200px;
+    gap: 4px;
+  }
+
+  .columnas__valor {
+    display: none;
+  }
+
+  .estadisticas__grilla {
+    grid-template-columns: 1fr;
+  }
 }

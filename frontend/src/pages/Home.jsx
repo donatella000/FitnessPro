@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Logo from '../components/Logo';
 import AuthModal from '../components/AuthModal';
@@ -13,7 +14,7 @@ const INSTAGRAM_URL = 'https://www.instagram.com/';
 const WHATSAPP_URL = 'https://wa.me/'; // ej: https://wa.me/5492911234567
 
 export default function Home() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const closeAuth = useCallback(() => setAuthOpen(false), []);
 
@@ -32,12 +33,9 @@ export default function Home() {
             </h1>
 
             {user ? (
-              <>
-                <p className="hero__greeting">Hola, {user.nombre}. Ya iniciaste sesión.</p>
-                <button type="button" className="btn-pill" onClick={logout}>
-                  Cerrar sesión
-                </button>
-              </>
+              <Link to="/dashboard" className="btn-pill">
+                Ir a mi panel
+              </Link>
             ) : (
               <button type="button" className="btn-pill" onClick={() => setAuthOpen(true)}>
                 Ingresar

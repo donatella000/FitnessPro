@@ -325,6 +325,15 @@ UPDATE usuarios u
 SET puntos = COALESCE((SELECT SUM(m.cantidad) FROM movimientos_puntos m WHERE m.id_usuario = u.id_usuario), 0)
 WHERE u.id_rol = 3;
 
+-- Fechas de alta repartidas, para que las estadísticas de inscripciones
+-- nuevas muestren meses distintos
+UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 120 DAY WHERE id_rol = 2;
+UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 21 DAY WHERE id_usuario IN (7, 9);
+UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 16 DAY WHERE id_usuario = 8;
+UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 41 DAY WHERE id_usuario = 10;
+UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 2 DAY  WHERE id_usuario = 11;
+UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 75 DAY WHERE id_usuario = 12;
+
 DROP TEMPORARY TABLE IF EXISTS numeros;
 SET SQL_SAFE_UPDATES = 1;
 
