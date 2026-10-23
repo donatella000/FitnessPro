@@ -6,7 +6,7 @@ export const GIMNASIO = {
   whatsappTexto: '(54) 291 1357 913',
   // Formato internacional para el enlace de WhatsApp (Argentina, celular: 54 9 + característica sin 0 + número)
   whatsappNumero: '5492911357913',
-  correo: 'fitnesspro@fitnesspro.com',
+  correo: 'fitnesspro.pps@gmail.com',
   instagram: 'fitnesspro.bb',
 };
 

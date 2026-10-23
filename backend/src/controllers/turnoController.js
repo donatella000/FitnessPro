@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { revisarCumpleanios, esCumpleaniosSQL } = require('../tareas/cumpleanios');
 
 const ROL_ADMIN = 1;
 const ROL_PROFESOR = 2;
@@ -734,7 +735,8 @@ const ingresoMolinete = async (req, res) => {
     }
 
     const [usuarios] = await conexion.query(
-      'SELECT id_usuario, nombre, id_rol FROM usuarios WHERE dni = ? AND activo = 1',
+      `SELECT id_usuario, nombre, id_rol, ${esCumpleaniosSQL('fecha_nacimiento')} AS es_cumpleanios
+       FROM usuarios WHERE dni = ? AND activo = 1`,
       [dni]
     );
     if (usuarios.length === 0) {
@@ -806,10 +808,17 @@ const ingresoMolinete = async (req, res) => {
 
     await conexion.commit();
 
+    // En su cumpleaños, el molinete lo saluda y se asegura de que tenga su regalo
+    const cumpleanios = Boolean(usuario.es_cumpleanios);
+    if (cumpleanios) {
+      await revisarCumpleanios(usuario.id_usuario).catch(() => {});
+    }
+
     return res.json({
       acceso: true,
       mensaje: `¡Hola ${usuario.nombre}! ¡Buen entrenamiento!`,
-      puntos_ganados: resultado.puntos
+      puntos_ganados: resultado.puntos,
+      cumpleanios
     });
   } catch (error) {
     await conexion.rollback();

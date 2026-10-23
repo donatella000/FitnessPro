@@ -6,6 +6,7 @@ import '../styles/Molinete.css';
 // Tiene que coincidir con MOLINETE_CLAVE del .env del backend.
 const CLAVE = import.meta.env.VITE_MOLINETE_CLAVE;
 const SEGUNDOS_MENSAJE = 4;
+const SEGUNDOS_CUMPLEANIOS = 8; // en el cumpleaños el saludo queda un rato más
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'borrar', '0', 'ingresar'];
 
 // Pantalla de la computadora de la entrada: el alumno escribe su DNI
@@ -13,7 +14,7 @@ const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'borrar', '0', 'ing
 // Usa fetch directamente (no el servicio api) porque esta pantalla no tiene sesión.
 export default function Molinete() {
   const [dni, setDni] = useState('');
-  const [resultado, setResultado] = useState(null); // { acceso, mensaje }
+  const [resultado, setResultado] = useState(null); // { acceso, mensaje, cumpleanios }
   const [enviando, setEnviando] = useState(false);
   const temporizador = useRef(null);
 
@@ -26,7 +27,8 @@ export default function Molinete() {
   const mostrar = useCallback((datos) => {
     setResultado(datos);
     clearTimeout(temporizador.current);
-    temporizador.current = setTimeout(reiniciar, SEGUNDOS_MENSAJE * 1000);
+    const segundos = datos.cumpleanios ? SEGUNDOS_CUMPLEANIOS : SEGUNDOS_MENSAJE;
+    temporizador.current = setTimeout(reiniciar, segundos * 1000);
   }, [reiniciar]);
 
   const ingresar = useCallback(async () => {
@@ -42,7 +44,11 @@ export default function Molinete() {
         body: JSON.stringify({ dni }),
       });
       const datos = await res.json().catch(() => ({}));
-      mostrar({ acceso: Boolean(datos.acceso), mensaje: datos.mensaje || 'No se pudo validar el ingreso.' });
+      mostrar({
+        acceso: Boolean(datos.acceso),
+        mensaje: datos.mensaje || 'No se pudo validar el ingreso.',
+        cumpleanios: Boolean(datos.acceso && datos.cumpleanios),
+      });
     } catch {
       mostrar({ acceso: false, mensaje: 'Sin conexión con el sistema. Acercate a recepción.' });
     } finally {
@@ -88,8 +94,19 @@ export default function Molinete() {
 
       {resultado ? (
         <section className="molinete__resultado" role="status" aria-live="assertive">
+          {resultado.cumpleanios && (
+            <>
+              <div className="molinete__confeti" aria-hidden="true">
+                {Array.from({ length: 24 }, (_, i) => <span key={i} style={{ '--i': i }} />)}
+              </div>
+              <p className="molinete__cumple">¡FELIZ CUMPLEAÑOS!</p>
+            </>
+          )}
           <div className="molinete__icono" aria-hidden="true">{resultado.acceso ? '✓' : '✕'}</div>
           <p className="molinete__mensaje">{resultado.mensaje}</p>
+          {resultado.cumpleanios && (
+            <p className="molinete__regalo">Te dejamos un regalo de puntos en tu cuenta.</p>
+          )}
           {!resultado.acceso && (
             <button type="button" className="molinete__volver" onClick={reiniciar}>Volver a intentar</button>
           )}

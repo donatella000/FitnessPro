@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const { darBienvenida } = require('../servicios/puntos');
+const { revisarCumpleanios } = require('../tareas/cumpleanios');
 
 const ROL_ADMIN = 1;
 const ROL_PROFESOR = 2;
@@ -272,6 +273,11 @@ const actualizarUsuario = async (req, res) => {
 
     valores.push(id);
     await db.query(`UPDATE usuarios SET ${sets.join(', ')} WHERE id_usuario = ?`, valores);
+
+    // Si se cargó la fecha de nacimiento y hoy es el cumpleaños, se saluda en el momento
+    if (req.body.fecha_nacimiento) {
+      revisarCumpleanios(id).catch((error) => console.error('Error al revisar el cumpleaños:', error.message));
+    }
 
     return res.json({ mensaje: '¡Usuario actualizado exitosamente!' });
   } catch (error) {

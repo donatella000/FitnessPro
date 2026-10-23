@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { revisarCumpleanios, esCumpleaniosSQL } = require('../tareas/cumpleanios');
 
 const ROL_PROFESOR = 2;
 const ROL_ALUMNO = 3;
@@ -17,13 +18,11 @@ const obtenerMiAbono = async (req, res) => {
   try {
     const { id_usuario } = req.usuario;
 
+    // Si hoy es su cumpleaños y todavía no recibió el regalo, se le da ahora
+    await revisarCumpleanios(id_usuario).catch(() => {});
+
     const [usuarios] = await db.query(`
-      SELECT nombre,
-        (fecha_nacimiento IS NOT NULL AND (
-          (MONTH(fecha_nacimiento) = MONTH(CURDATE()) AND DAY(fecha_nacimiento) = DAY(CURDATE()))
-          OR (MONTH(fecha_nacimiento) = 2 AND DAY(fecha_nacimiento) = 29
-              AND MONTH(CURDATE()) = 2 AND DAY(CURDATE()) = 28 AND DAY(LAST_DAY(CURDATE())) = 28)
-        )) AS es_cumpleanios
+      SELECT nombre, ${esCumpleaniosSQL('fecha_nacimiento')} AS es_cumpleanios
       FROM usuarios WHERE id_usuario = ?
     `, [id_usuario]);
     if (usuarios.length === 0) {
