@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import UserMenu from './UserMenu';
+import Escarapela from './Escarapela';
+import { esPatrio, useTema } from '../context/TemaContext';
 import '../styles/Navbar.css';
 
 // Cada href apunta a una sección de la Home. El prefijo "/" hace que funcionen
@@ -13,17 +15,23 @@ const LINKS = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { tema } = useTema();
 
   return (
     <header className="navbar">
       <a className="navbar__brand" href="/#inicio" aria-label="FitnessPro, ir al inicio">
-        <svg className="navbar__mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-          <g fill="currentColor">
-            <rect x="42" y="0" width="16" height="100" />
-            <rect x="42" y="0" width="16" height="100" transform="rotate(60 50 50)" />
-            <rect x="42" y="0" width="16" height="100" transform="rotate(120 50 50)" />
-          </g>
-        </svg>
+        {/* En las fechas patrias, el asterisco se convierte en escarapela */}
+        {esPatrio(tema) ? (
+          <Escarapela className="navbar__escarapela" />
+        ) : (
+          <svg className="navbar__mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+            <g fill="currentColor">
+              <rect x="42" y="0" width="16" height="100" />
+              <rect x="42" y="0" width="16" height="100" transform="rotate(60 50 50)" />
+              <rect x="42" y="0" width="16" height="100" transform="rotate(120 50 50)" />
+            </g>
+          </svg>
+        )}
       </a>
 
       <button

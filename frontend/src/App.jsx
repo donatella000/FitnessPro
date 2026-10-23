@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { TemaProvider } from './context/TemaContext';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import ResetPassword from './pages/ResetPassword';
@@ -9,6 +10,7 @@ import Molinete from './pages/Molinete';
 
 export default function App() {
   return (
+    <TemaProvider>
     <AuthProvider>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -23,5 +25,6 @@ export default function App() {
         <Route path="/pago-fallido" element={<PagoResultado tipo="fallido" />} />
       </Routes>
     </AuthProvider>
+    </TemaProvider>
   );
 }

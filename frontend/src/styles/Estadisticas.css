@@ -276,7 +276,7 @@
 
 .tabla--clic tbody tr:hover td,
 .tabla--clic tbody tr:focus td {
-  background: rgba(13, 255, 74, 0.12);
+  background: rgba(var(--neon-rgb), 0.12);
 }
 
 .mini-barra {

@@ -4,11 +4,17 @@
   --bg: #01200e;
   --bg-deep: #001208;
   --neon: #0dff4a;
+  --neon-rgb: 13, 255, 74; /* el mismo acento en r, g, b (para transparencias) */
   --neon-ink: #03170a;
   --ink: #ffffff;
   --danger: #ff8f85;
   --font: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --nav-h: 84px;
+
+  /* Degradé del círculo del logo (cada tema los redefine en temas.css) */
+  --emblema-1: #19ff57;
+  --emblema-2: #10d640;
+  --emblema-3: #087a2c;
 }
 
 *,
@@ -60,7 +66,7 @@ body {
 }
 
 .btn-pill:hover {
-  box-shadow: 0 0 26px rgba(13, 255, 74, 0.55);
+  box-shadow: 0 0 26px rgba(var(--neon-rgb), 0.55);
 }
 
 .btn-pill:active {

@@ -182,7 +182,7 @@
 
 .horario.is-mio {
   border-color: var(--neon-ink);
-  background: rgba(13, 255, 74, 0.12);
+  background: rgba(var(--neon-rgb), 0.12);
 }
 
 .horario__hora {
@@ -228,7 +228,7 @@
 .plan.is-active {
   border-color: var(--neon-ink);
   box-shadow: inset 0 0 0 1px var(--neon-ink);
-  background: rgba(13, 255, 74, 0.12);
+  background: rgba(var(--neon-rgb), 0.12);
 }
 
 .plan__nombre {
@@ -252,7 +252,7 @@
   padding: 20px 24px;
   border: 2px solid var(--neon-ink);
   border-radius: 14px;
-  background: rgba(13, 255, 74, 0.18);
+  background: rgba(var(--neon-rgb), 0.18);
 }
 
 .resumen__titulo {
@@ -306,7 +306,7 @@
 }
 
 .fila-elegible.is-active td {
-  background: rgba(13, 255, 74, 0.15);
+  background: rgba(var(--neon-rgb), 0.15);
 }
 
 .fila-elegible__boton {

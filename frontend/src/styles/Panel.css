@@ -218,7 +218,7 @@
 }
 
 .btn:hover {
-  box-shadow: 0 0 14px rgba(13, 255, 74, 0.45);
+  box-shadow: 0 0 14px rgba(var(--neon-rgb), 0.45);
 }
 
 .btn:disabled {
@@ -310,7 +310,7 @@
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(13, 255, 74, 0.2);
+  background: rgba(var(--neon-rgb), 0.2);
   color: var(--neon-ink);
   font-size: 0.78rem;
   font-weight: 600;
@@ -377,7 +377,7 @@
 }
 
 .aviso--ok {
-  background: rgba(13, 255, 74, 0.18);
+  background: rgba(var(--neon-rgb), 0.18);
   color: var(--neon-ink);
 }
 
@@ -420,4 +420,109 @@
   margin: 0 0 10px;
   font-weight: 700;
   font-size: 0.95rem;
+}
+
+/* ---------- Apariencia: tarjetas de temas ---------- */
+.temas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.tema {
+  overflow: hidden;
+  border: 1px solid rgba(3, 23, 10, 0.12);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.tema.is-activo {
+  border-color: var(--neon-ink);
+  box-shadow: 0 0 0 2px var(--neon-ink);
+}
+
+.tema__muestra {
+  position: relative;
+  height: 84px;
+}
+
+.tema__circulo {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.tema__boton {
+  position: absolute;
+  left: 16px;
+  bottom: 18px;
+  width: 64px;
+  height: 16px;
+  border-radius: 999px;
+}
+
+.tema__cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px 16px;
+}
+
+.tema__nombre {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tema__detalle {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(3, 23, 10, 0.7);
+}
+
+/* ---------- Pestañas del panel en pantallas chicas ---------- */
+/* En el celular, las pestañas se deslizan de costado en vez de ocupar varios renglones */
+@media (max-width: 760px) {
+  .panel__tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .panel__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .panel__tab {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .dash__acciones {
+    width: 100%;
+  }
+
+  .vista {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .vista__opcion {
+    flex-shrink: 0;
+    padding: 0 12px;
+  }
+
+  .form {
+    padding: 14px;
+  }
+
+  .tabla th,
+  .tabla td {
+    padding: 9px 10px;
+  }
 }

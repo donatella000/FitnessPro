@@ -37,7 +37,7 @@
 }
 
 .dash__navitem:hover {
-  box-shadow: 0 0 16px rgba(13, 255, 74, 0.5);
+  box-shadow: 0 0 16px rgba(var(--neon-rgb), 0.5);
 }
 
 .dash__status {

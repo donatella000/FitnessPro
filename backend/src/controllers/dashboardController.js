@@ -516,4 +516,35 @@ const obtenerDetalleClaseDictada = async (req, res) => {
   }
 };
 
-module.exports = { obtenerMiAbono, obtenerEstadisticas, obtenerEvolucion, obtenerClasesDictadas, obtenerDetalleClaseDictada };
+// ==========================================================
+// 5. CAMBIAR EL TEMA DE COLORES (Solo Admin)
+// ==========================================================
+// PUT /api/dashboard/tema  Body: { tema: 'navidad' }
+// El tema queda activo hasta que el admin elija otro.
+const TEMAS_VALIDOS = [
+  'normal', 'navidad', 'anio_nuevo', 'pascuas',
+  'patria_25_mayo', 'patria_bandera', 'patria_independencia',
+  'mundial', 'primavera', 'halloween'
+];
+
+const cambiarTema = async (req, res) => {
+  try {
+    const { tema } = req.body;
+    if (!TEMAS_VALIDOS.includes(tema)) {
+      return res.status(400).json({ mensaje: 'El tema elegido no existe.' });
+    }
+
+    await db.query(`
+      INSERT INTO configuracion (clave, valor, descripcion)
+      VALUES ('tema', ?, 'Tema de colores activo del sitio')
+      ON DUPLICATE KEY UPDATE valor = VALUES(valor)
+    `, [tema]);
+
+    return res.json({ mensaje: 'Tema actualizado.', tema });
+  } catch (error) {
+    console.error('Error al cambiar el tema:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al cambiar el tema.' });
+  }
+};
+
+module.exports = { cambiarTema, obtenerMiAbono, obtenerEstadisticas, obtenerEvolucion, obtenerClasesDictadas, obtenerDetalleClaseDictada };

@@ -14,6 +14,7 @@ const ICONOS = {
   salir: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
   rutina: 'M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12',
   puntos: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z',
+  apariencia: 'M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A4.6 4.6 0 0 0 22 9.8C22 5.9 17.5 3 12 3zM7 12h.01M9.5 7.5h.01M14.5 7.5h.01',
   estadisticas: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
   molinete: 'M12 3v18M5 7l7 5 7-5M5 17l7-5 7 5',
   perfil: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5',
@@ -37,6 +38,7 @@ const OPCIONES_POR_ROL = {
     { label: 'Rutinas', icono: 'rutina', to: '/dashboard?vista=admin&seccion=rutinas' },
     { label: 'Premios y puntos', icono: 'puntos', to: '/dashboard?vista=admin&seccion=puntos' },
     { label: 'Estructura del gimnasio', icono: 'actividades', to: '/dashboard?vista=admin&seccion=actividades' },
+    { label: 'Apariencia', icono: 'apariencia', to: '/dashboard?vista=admin&seccion=apariencia' },
   ],
   2: [
     { label: 'Mis alumnos', icono: 'usuarios', to: '/dashboard?vista=profesor&seccion=usuarios' },

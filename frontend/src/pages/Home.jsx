@@ -1,12 +1,14 @@
 import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import Logo from '../components/Logo';
 import AuthModal from '../components/AuthModal';
 import ActivitiesSection from '../components/ActivitiesSection';
 import AboutSection from '../components/AboutSection';
 import TeamSection from '../components/TeamSection';
+import EmblemaTematico from '../components/EmblemaTematico';
+import FranjaTematica, { temaTieneFranja } from '../components/FranjaTematica';
 import { useAuth } from '../context/AuthContext';
+import { useTema } from '../context/TemaContext';
 import '../styles/Home.css';
 
 // Reemplazá estos links por los perfiles reales del gimnasio.
@@ -15,6 +17,7 @@ const WHATSAPP_URL = 'https://wa.me/'; // ej: https://wa.me/5492911234567
 
 export default function Home() {
   const { user } = useAuth();
+  const { tema } = useTema();
   const [authOpen, setAuthOpen] = useState(false);
   const closeAuth = useCallback(() => setAuthOpen(false), []);
 
@@ -23,7 +26,10 @@ export default function Home() {
       <Navbar />
 
       <main>
-        <section id="inicio" className="hero">
+        <section id="inicio" className={`hero${temaTieneFranja(tema) ? ' hero--con-franja' : ''}`}>
+          {/* Cinta patria o frase del Mundial / Primavera, según el tema activo */}
+          <FranjaTematica tema={tema} />
+
           <div className="hero__copy">
             <p className="hero__kicker">Empezá a entrenar distinto</p>
             <h1 className="hero__title">
@@ -43,11 +49,8 @@ export default function Home() {
             )}
           </div>
 
-          <div className="hero__emblem">
-            <div className="hero__ring">
-              <Logo />
-            </div>
-          </div>
+          {/* Círculo del logo con las decoraciones del tema activo */}
+          <EmblemaTematico tema={tema} />
 
           <div className="hero__social">
             <a href={INSTAGRAM_URL} target="_blank" rel="noreferrer" aria-label="Instagram de FitnessPro">

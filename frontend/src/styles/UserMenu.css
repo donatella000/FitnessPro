@@ -24,7 +24,7 @@
   height: 38px;
   border-radius: 50%;
   background: var(--neon);
-  box-shadow: 0 0 14px rgba(13, 255, 74, 0.45);
+  box-shadow: 0 0 14px rgba(var(--neon-rgb), 0.45);
 }
 
 .usermenu__avatar svg {
@@ -50,7 +50,7 @@
 
 .usermenu__boton:hover .usermenu__avatar,
 .usermenu__boton[aria-expanded='true'] .usermenu__avatar {
-  box-shadow: 0 0 22px rgba(13, 255, 74, 0.75);
+  box-shadow: 0 0 22px rgba(var(--neon-rgb), 0.75);
 }
 
 /* Lista desplegable con la flechita que apunta al avatar */
@@ -64,10 +64,10 @@
   gap: 4px;
   min-width: 260px;
   padding: 12px;
-  border: 1px solid rgba(13, 255, 74, 0.55);
+  border: 1px solid rgba(var(--neon-rgb), 0.55);
   border-radius: 12px;
   background: var(--bg);
-  box-shadow: 0 0 28px rgba(13, 255, 74, 0.25), 0 12px 30px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 28px rgba(var(--neon-rgb), 0.25), 0 12px 30px rgba(0, 0, 0, 0.45);
 }
 
 .usermenu__lista::before {
@@ -77,8 +77,8 @@
   right: var(--flecha, 104px);
   width: 14px;
   height: 14px;
-  border-top: 1px solid rgba(13, 255, 74, 0.55);
-  border-left: 1px solid rgba(13, 255, 74, 0.55);
+  border-top: 1px solid rgba(var(--neon-rgb), 0.55);
+  border-left: 1px solid rgba(var(--neon-rgb), 0.55);
   background: var(--bg);
   transform: rotate(45deg);
 }
@@ -126,7 +126,7 @@
   width: 100%;
   margin: 6px 0;
   border: 0;
-  border-top: 1px solid rgba(13, 255, 74, 0.25);
+  border-top: 1px solid rgba(var(--neon-rgb), 0.25);
 }
 
 @media (max-width: 640px) {

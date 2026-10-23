@@ -6,7 +6,7 @@
   align-items: center;
   min-height: 100vh;
   padding: 32px 20px 40px;
-  background: radial-gradient(circle at 50% 30%, #04361a 0%, var(--bg) 55%, var(--bg-deep) 100%);
+  background: radial-gradient(circle at 50% 30%, rgba(var(--neon-rgb), 0.18) 0%, var(--bg) 55%, var(--bg-deep) 100%);
   color: var(--ink);
   transition: background 0.3s ease;
 }
@@ -58,7 +58,7 @@
   border: 2px solid var(--neon);
   border-radius: 14px;
   background: rgba(0, 0, 0, 0.35);
-  box-shadow: 0 0 24px rgba(13, 255, 74, 0.25);
+  box-shadow: 0 0 24px rgba(var(--neon-rgb), 0.25);
   font-size: 2.6rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -81,7 +81,7 @@
 
 .tecla {
   height: 78px;
-  border: 1px solid rgba(13, 255, 74, 0.35);
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.06);
   color: var(--ink);
@@ -91,7 +91,7 @@
 }
 
 .tecla:hover:not(:disabled) {
-  background: rgba(13, 255, 74, 0.15);
+  background: rgba(var(--neon-rgb), 0.15);
 }
 
 .tecla:active:not(:disabled) {
@@ -116,7 +116,7 @@
 
 .tecla--ingresar:hover:not(:disabled) {
   background: var(--neon);
-  box-shadow: 0 0 22px rgba(13, 255, 74, 0.6);
+  box-shadow: 0 0 22px rgba(var(--neon-rgb), 0.6);
 }
 
 .molinete__salida {
@@ -154,7 +154,7 @@
 .is-ok .molinete__icono {
   background: var(--neon);
   color: var(--neon-ink);
-  box-shadow: 0 0 50px rgba(13, 255, 74, 0.7);
+  box-shadow: 0 0 50px rgba(var(--neon-rgb), 0.7);
 }
 
 .is-error .molinete__icono {

@@ -1,0 +1,174 @@
+/* =========================================================
+   Temas de colores por fechas especiales.
+   Cada tema redefine las variables de index.css:
+   --bg / --bg-deep   fondo oscuro (barra, portada, molinete)
+   --neon             color de acento (botones, textos destacados)
+   --neon-rgb         el mismo acento en formato "r, g, b" (para transparencias)
+   --neon-ink         tinta oscura para texto sobre el acento
+   --emblema-1/2/3    degradé del círculo del logo
+   ========================================================= */
+
+[data-tema='navidad'] {
+  --bg: #0b2e1a;
+  --bg-deep: #06200f;
+  --neon: #ff4d5a;
+  --neon-rgb: 255, 77, 90;
+  --neon-ink: #0b2e1a;
+  --emblema-1: #ff6b74;
+  --emblema-2: #e63946;
+  --emblema-3: #8f1622;
+}
+
+[data-tema='anio_nuevo'] {
+  --bg: #0d0d0d;
+  --bg-deep: #000000;
+  --neon: #f5c542;
+  --neon-rgb: 245, 197, 66;
+  --neon-ink: #1a1400;
+  --emblema-1: #ffe08a;
+  --emblema-2: #f5c542;
+  --emblema-3: #9c7a14;
+}
+
+[data-tema='pascuas'] {
+  --bg: #2a1b4a;
+  --bg-deep: #1c1135;
+  --neon: #c9b6ff;
+  --neon-rgb: 201, 182, 255;
+  --neon-ink: #1f1238;
+  --emblema-1: #d9cbff;
+  --emblema-2: #a98bf0;
+  --emblema-3: #5e3fb0;
+}
+
+[data-tema='patria_25_mayo'],
+[data-tema='patria_bandera'],
+[data-tema='patria_independencia'] {
+  --bg: #0b2545;
+  --bg-deep: #071a33;
+  --neon: #74acdf;
+  --neon-rgb: 116, 172, 223;
+  --neon-ink: #071a33;
+  --emblema-1: #a9cdee;
+  --emblema-2: #74acdf;
+  --emblema-3: #2f6aa3;
+}
+
+[data-tema='mundial'] {
+  --bg: #0a1f3d;
+  --bg-deep: #06152b;
+  --neon: #8ec5ee;
+  --neon-rgb: 142, 197, 238;
+  --neon-ink: #06152b;
+  --emblema-1: #ece0bf;
+  --emblema-2: #ece0bf;
+  --emblema-3: #ece0bf;
+}
+
+[data-tema='primavera'] {
+  --bg: #10331f;
+  --bg-deep: #0a2414;
+  --neon: #ff8fb8;
+  --neon-rgb: 255, 143, 184;
+  --neon-ink: #3d0a1e;
+  --emblema-1: #f7b0ba;
+  --emblema-2: #f26b6b;
+  --emblema-3: #ffd23f;
+}
+
+[data-tema='halloween'] {
+  --bg: #1e0b2e;
+  --bg-deep: #140720;
+  --neon: #ff7a00;
+  --neon-rgb: 255, 122, 0;
+  --neon-ink: #2a1000;
+  --emblema-1: #ff9a3c;
+  --emblema-2: #f57c00;
+  --emblema-3: #c25e00;
+}
+
+/* Transición suave al cambiar de tema */
+body,
+.navbar,
+.hero,
+.btn-pill {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* ---------- Emblema de la portada ---------- */
+.hero__emblem--tematico {
+  width: min(100%, 480px);
+  aspect-ratio: 400 / 460;
+  background: none;
+  border-radius: 0;
+}
+
+.hero__emblem--tematico > svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.emblema__palabra {
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.emblema__frase {
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- Franja superior (cinta patria, Mundial, primavera) ---------- */
+.franja {
+  position: absolute;
+  top: calc(var(--nav-h) + 8px);
+  left: 0;
+  right: 0;
+  height: 52px;
+  pointer-events: none;
+}
+
+.franja svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.franja--texto {
+  display: grid;
+  place-items: center;
+  background: var(--neon);
+  color: var(--neon-ink);
+  font: 700 clamp(1rem, 2.6vw, 1.6rem) / 1 var(--font);
+  letter-spacing: 0.12em;
+}
+
+.franja--primavera {
+  background: repeating-linear-gradient(90deg, #ff8fb8 0 60px, #ffa6c7 60px 120px);
+}
+
+/* Con franja, el contenido de la portada baja un poco para no quedar tapado */
+.hero--con-franja {
+  padding-top: calc(var(--nav-h) + 100px);
+}
+
+/* ---------- Escarapela en la barra ---------- */
+.navbar__escarapela {
+  display: block;
+  width: 58px;
+  height: 58px;
+  margin: calc((var(--nav-h) - 58px) / 2) 0 0 10px;
+}
+
+@media (max-width: 640px) {
+  .franja {
+    height: 40px;
+  }
+
+  .hero--con-franja {
+    padding-top: calc(var(--nav-h) + 76px);
+  }
+}

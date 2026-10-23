@@ -97,4 +97,19 @@ const obtenerEquipo = async (req, res) => {
   }
 };
 
-module.exports = { obtenerEquipo };
+// ==========================================================
+// TEMA DE COLORES ACTIVO (público, sin sesión)
+// ==========================================================
+// GET /api/publico/tema -> { tema: 'navidad' }
+// Lo elige el admin desde el panel; si nunca se eligió, es 'normal'.
+const obtenerTema = async (req, res) => {
+  try {
+    const [filas] = await db.query("SELECT valor FROM configuracion WHERE clave = 'tema'");
+    return res.json({ tema: filas.length ? filas[0].valor : 'normal' });
+  } catch (error) {
+    console.error('Error al obtener el tema:', error);
+    return res.json({ tema: 'normal' });
+  }
+};
+
+module.exports = { obtenerEquipo, obtenerTema };
