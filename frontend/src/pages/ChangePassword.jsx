@@ -6,14 +6,51 @@ import '../styles/ResetPassword.css';
 // Estilo del botón tipo enlace ("Cerrar sesión" / "Volver")
 import '../styles/AuthModal.css';
 
-export default function changePassword() {
+// Campo de contraseña con su propio botón de ojito para mostrar u ocultar
+function CampoClave({ etiqueta, valor, onChange, autoComplete, autoFocus = false }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <label className="reset__field">
+      <span>{etiqueta}</span>
+      <div className="reset__password-wrap">
+        <input
+          type={visible ? 'text' : 'password'}
+          value={valor}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          autoFocus={autoFocus}
+          required
+        />
+        <button
+          type="button"
+          className="reset__toggle-password"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? `Ocultar ${etiqueta.toLowerCase()}` : `Mostrar ${etiqueta.toLowerCase()}`}
+        >
+          {visible ? (
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+              <path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.88 5.09A10.94 10.94 0 0 1 12 5c6 0 10 7 10 7a17.6 17.6 0 0 1-3.22 4.19M6.6 6.6C4.08 8.13 2 10.8 2 10.8s4 7 10 7c1.08 0 2.1-.18 3.04-.5" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          )}
+        </button>
+      </div>
+    </label>
+  );
+}
+
+export default function ChangePassword() {
   const { user, cambiarPassword, logout } = useAuth();
   const navigate = useNavigate();
 
   const [claveActual, setClaveActual] = useState('');
   const [nuevaClave, setNuevaClave] = useState('');
   const [confirmar, setConfirmar] = useState('');
-  const [verPassword, setVerPassword] = useState(false);
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,58 +110,25 @@ export default function changePassword() {
           </>
         ) : (
           <form className="reset__form" onSubmit={handleSubmit}>
-            <label className="reset__field">
-              <span>Contraseña actual</span>
-              <input
-                type={verPassword ? 'text' : 'password'}
-                value={claveActual}
-                onChange={(e) => setClaveActual(e.target.value)}
-                autoComplete="current-password"
-                autoFocus
-                required
-              />
-            </label>
-
-            <label className="reset__field">
-              <span>Nueva contraseña</span>
-              <div className="reset__password-wrap">
-                <input
-                  type={verPassword ? 'text' : 'password'}
-                  value={nuevaClave}
-                  onChange={(e) => setNuevaClave(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="reset__toggle-password"
-                  onClick={() => setVerPassword((v) => !v)}
-                  aria-label={verPassword ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}
-                >
-                  {verPassword ? (
-                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-                      <path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.88 5.09A10.94 10.94 0 0 1 12 5c6 0 10 7 10 7a17.6 17.6 0 0 1-3.22 4.19M6.6 6.6C4.08 8.13 2 10.8 2 10.8s4 7 10 7c1.08 0 2.1-.18 3.04-.5" />
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-                      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </label>
-
-            <label className="reset__field">
-              <span>Repetí la nueva contraseña</span>
-              <input
-                type={verPassword ? 'text' : 'password'}
-                value={confirmar}
-                onChange={(e) => setConfirmar(e.target.value)}
-                autoComplete="new-password"
-                required
-              />
-            </label>
+            <CampoClave
+              etiqueta="Contraseña actual"
+              valor={claveActual}
+              onChange={setClaveActual}
+              autoComplete="current-password"
+              autoFocus
+            />
+            <CampoClave
+              etiqueta="Nueva contraseña"
+              valor={nuevaClave}
+              onChange={setNuevaClave}
+              autoComplete="new-password"
+            />
+            <CampoClave
+              etiqueta="Repetí la nueva contraseña"
+              valor={confirmar}
+              onChange={setConfirmar}
+              autoComplete="new-password"
+            />
 
             {error && <p className="reset__error" role="alert">{error}</p>}
 
