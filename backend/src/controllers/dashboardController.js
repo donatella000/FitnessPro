@@ -17,10 +17,19 @@ const obtenerMiAbono = async (req, res) => {
   try {
     const { id_usuario } = req.usuario;
 
-    const [usuarios] = await db.query('SELECT nombre FROM usuarios WHERE id_usuario = ?', [id_usuario]);
+    const [usuarios] = await db.query(`
+      SELECT nombre,
+        (fecha_nacimiento IS NOT NULL AND (
+          (MONTH(fecha_nacimiento) = MONTH(CURDATE()) AND DAY(fecha_nacimiento) = DAY(CURDATE()))
+          OR (MONTH(fecha_nacimiento) = 2 AND DAY(fecha_nacimiento) = 29
+              AND MONTH(CURDATE()) = 2 AND DAY(CURDATE()) = 28 AND DAY(LAST_DAY(CURDATE())) = 28)
+        )) AS es_cumpleanios
+      FROM usuarios WHERE id_usuario = ?
+    `, [id_usuario]);
     if (usuarios.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
     }
+    const esCumpleanios = Boolean(usuarios[0].es_cumpleanios);
 
     const [abonos] = await db.query(`
       SELECT sa.id_suscripcion_alumno, s.nombre AS plan, a.nombre AS actividad,
@@ -42,6 +51,7 @@ const obtenerMiAbono = async (req, res) => {
         vencimiento: null,
         turnos_restantes: null,
         abonos: [],
+        es_cumpleanios: esCumpleanios,
         mensaje: 'Todavía no tenés un abono activo.'
       });
     }
@@ -53,7 +63,8 @@ const obtenerMiAbono = async (req, res) => {
       plan: principal.plan,
       vencimiento: principal.vencimiento,
       turnos_restantes: principal.turnos_restantes,
-      abonos: abonos.map((a) => ({ ...a, es_renovacion: Boolean(a.es_renovacion) }))
+      abonos: abonos.map((a) => ({ ...a, es_renovacion: Boolean(a.es_renovacion) })),
+      es_cumpleanios: esCumpleanios
     });
   } catch (error) {
     console.error('Error al obtener el abono:', error);
@@ -547,4 +558,67 @@ const cambiarTema = async (req, res) => {
   }
 };
 
-module.exports = { cambiarTema, obtenerMiAbono, obtenerEstadisticas, obtenerEvolucion, obtenerClasesDictadas, obtenerDetalleClaseDictada };
+// ==========================================================
+// 6. CONFIGURACIÓN GENERAL (Solo Admin)
+// ==========================================================
+// Valores que el admin puede modificar desde el panel, con sus límites.
+const CONFIG_EDITABLE = {
+  puntos_por_asistencia: { min: 0, max: 1000 },
+  puntos_bienvenida: { min: 0, max: 100000 },
+  puntos_cumpleanios: { min: 0, max: 100000 },
+  margen_ingreso_minutos: { min: 1, max: 60 },
+  limite_reserva_minutos: { min: 0, max: 1440 },
+  limite_cancelacion_minutos: { min: 0, max: 2880 },
+  dias_visibles_turnos: { min: 1, max: 30 }
+};
+
+// GET /api/dashboard/configuracion
+const obtenerConfiguracion = async (req, res) => {
+  try {
+    const [filas] = await db.query(
+      'SELECT clave, valor, descripcion FROM configuracion WHERE clave IN (?)',
+      [Object.keys(CONFIG_EDITABLE)]
+    );
+    const config = {};
+    for (const clave of Object.keys(CONFIG_EDITABLE)) {
+      const fila = filas.find((f) => f.clave === clave);
+      config[clave] = fila ? Number(fila.valor) : null;
+    }
+    return res.json(config);
+  } catch (error) {
+    console.error('Error al obtener la configuración:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al obtener la configuración.' });
+  }
+};
+
+// PUT /api/dashboard/configuracion  Body: { puntos_por_asistencia: 10, ... }
+const actualizarConfiguracion = async (req, res) => {
+  try {
+    const cambios = Object.entries(req.body).filter(([clave]) => CONFIG_EDITABLE[clave]);
+    if (cambios.length === 0) {
+      return res.status(400).json({ mensaje: 'No se enviaron valores para actualizar.' });
+    }
+
+    for (const [clave, valor] of cambios) {
+      const numero = Number(valor);
+      const { min, max } = CONFIG_EDITABLE[clave];
+      if (!Number.isInteger(numero) || numero < min || numero > max) {
+        return res.status(400).json({ mensaje: `El valor de "${clave}" tiene que ser un número entero entre ${min} y ${max}.` });
+      }
+    }
+
+    for (const [clave, valor] of cambios) {
+      await db.query(`
+        INSERT INTO configuracion (clave, valor) VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE valor = VALUES(valor)
+      `, [clave, String(Number(valor))]);
+    }
+
+    return res.json({ mensaje: 'Configuración guardada.' });
+  } catch (error) {
+    console.error('Error al guardar la configuración:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al guardar la configuración.' });
+  }
+};
+
+module.exports = { obtenerConfiguracion, actualizarConfiguracion, cambiarTema, obtenerMiAbono, obtenerEstadisticas, obtenerEvolucion, obtenerClasesDictadas, obtenerDetalleClaseDictada };

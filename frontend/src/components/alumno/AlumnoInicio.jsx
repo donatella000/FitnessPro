@@ -35,6 +35,13 @@ export default function AlumnoInicio({ onIr }) {
 
   return (
     <>
+      {data.es_cumpleanios && (
+        <div className="cumpleanios" role="status">
+          <strong>¡Feliz cumpleaños, {data.nombre}!</strong>
+          Todo el equipo de FitnessPro te saluda. Te regalamos puntos que ya están en tu cuenta.
+        </div>
+      )}
+
       {data.abonos.length === 0 ? (
         <p className="dash__status">{data.mensaje}</p>
       ) : (

@@ -14,6 +14,7 @@ const ICONOS = {
   salir: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
   rutina: 'M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12',
   puntos: 'M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z',
+  configuracion: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
   apariencia: 'M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A4.6 4.6 0 0 0 22 9.8C22 5.9 17.5 3 12 3zM7 12h.01M9.5 7.5h.01M14.5 7.5h.01',
   estadisticas: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
   molinete: 'M12 3v18M5 7l7 5 7-5M5 17l7-5 7 5',
@@ -39,6 +40,7 @@ const OPCIONES_POR_ROL = {
     { label: 'Premios y puntos', icono: 'puntos', to: '/dashboard?vista=admin&seccion=puntos' },
     { label: 'Estructura del gimnasio', icono: 'actividades', to: '/dashboard?vista=admin&seccion=actividades' },
     { label: 'Apariencia', icono: 'apariencia', to: '/dashboard?vista=admin&seccion=apariencia' },
+    { label: 'Configuración', icono: 'configuracion', to: '/dashboard?vista=admin&seccion=configuracion' },
   ],
   2: [
     { label: 'Mis alumnos', icono: 'usuarios', to: '/dashboard?vista=profesor&seccion=usuarios' },

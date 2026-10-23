@@ -263,7 +263,7 @@ CREATE TABLE movimientos_puntos (
     id_movimiento  INT PRIMARY KEY AUTO_INCREMENT,
     id_usuario     INT NOT NULL,
     cantidad       INT NOT NULL,                -- positivo suma, negativo resta
-    motivo         ENUM('asistencia', 'canje', 'ajuste') NOT NULL,
+    motivo         ENUM('asistencia', 'canje', 'ajuste', 'bienvenida', 'cumpleanios') NOT NULL,
     descripcion    VARCHAR(255) NULL,
     registrado_por INT NULL,
     fecha          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -299,7 +299,9 @@ VALUES (
 );
 
 INSERT INTO configuracion (clave, valor, descripcion) VALUES
-('puntos_por_asistencia',      '100', 'Puntos que suma el alumno por cada asistencia'),
+('puntos_por_asistencia',      '10',  'Puntos que suma el alumno por cada asistencia'),
+('puntos_bienvenida',          '500', 'Puntos de regalo para cada alumno nuevo'),
+('puntos_cumpleanios',         '200', 'Puntos de regalo el día del cumpleaños del alumno'),
 ('margen_ingreso_minutos',     '10',  'Minutos antes/después del inicio en que el molinete permite ingresar'),
 ('limite_reserva_minutos',     '1',   'Minutos antes del inicio hasta los que se puede reservar'),
 ('limite_cancelacion_minutos', '120', 'Minutos antes del inicio hasta los que se puede cancelar'),

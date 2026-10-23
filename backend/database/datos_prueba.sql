@@ -232,7 +232,7 @@ WHERE d.n BETWEEN 18 AND 40
 
 -- Asistencias de los turnos a los que fueron (por molinete, 5 minutos antes)
 INSERT INTO asistencias (id_turno, id_usuario, fecha_hora, tipo, puntos_otorgados)
-SELECT t.id_turno, t.id_usuario, TIMESTAMP(t.fecha, h.hora_inicio) - INTERVAL 5 MINUTE, 'molinete', 100
+SELECT t.id_turno, t.id_usuario, TIMESTAMP(t.fecha, h.hora_inicio) - INTERVAL 5 MINUTE, 'molinete', 10
 FROM turnos t
 JOIN horarios_clase h ON t.id_horario = h.id_horario
 WHERE t.estado = 'asistido';
@@ -310,8 +310,13 @@ FROM asistencias;
 
 -- Ajustes manuales
 INSERT INTO movimientos_puntos (id_usuario, cantidad, motivo, descripcion, registrado_por, fecha) VALUES
-(7, 1500, 'ajuste', 'Bonificación de bienvenida', 1, NOW() - INTERVAL 18 DAY),
-(9, 1000, 'ajuste', 'Promoción de apertura',      1, NOW() - INTERVAL 18 DAY);
+(7, 500, 'bienvenida', 'Regalo de bienvenida', NULL, NOW() - INTERVAL 21 DAY),
+(8, 500, 'bienvenida', 'Regalo de bienvenida', NULL, NOW() - INTERVAL 16 DAY),
+(9, 500, 'bienvenida', 'Regalo de bienvenida', NULL, NOW() - INTERVAL 21 DAY),
+(10, 500, 'bienvenida', 'Regalo de bienvenida', NULL, NOW() - INTERVAL 41 DAY),
+(11, 500, 'bienvenida', 'Regalo de bienvenida', NULL, NOW() - INTERVAL 2 DAY),
+(12, 500, 'bienvenida', 'Regalo de bienvenida', NULL, NOW() - INTERVAL 75 DAY),
+(9, 300, 'ajuste', 'Promoción de apertura', 1, NOW() - INTERVAL 18 DAY);
 
 -- Lucía ya canjeó una botella y la retiró
 INSERT INTO canjes (id_usuario, id_premio, puntos_usados, estado, fecha) VALUES

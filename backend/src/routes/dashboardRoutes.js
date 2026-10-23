@@ -6,7 +6,9 @@ const {
   obtenerEvolucion,
   obtenerClasesDictadas,
   obtenerDetalleClaseDictada,
-  cambiarTema
+  cambiarTema,
+  obtenerConfiguracion,
+  actualizarConfiguracion
 } = require('../controllers/dashboardController');
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
 
@@ -23,5 +25,9 @@ router.get('/clases-dictadas/detalle', permitirRoles(1), obtenerDetalleClaseDict
 
 // Tema de colores del sitio (solo Administrador)
 router.put('/tema', permitirRoles(1), cambiarTema);
+
+// Configuración general: puntos y reglas de turnos (solo Administrador)
+router.get('/configuracion', permitirRoles(1), obtenerConfiguracion);
+router.put('/configuracion', permitirRoles(1), actualizarConfiguracion);
 
 module.exports = router;

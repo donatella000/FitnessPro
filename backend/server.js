@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const db = require('./src/config/db');
+const { iniciarTareaCumpleanios } = require('./src/tareas/cumpleanios');
 
 // Importación de todos los módulos de rutas
 const authRoutes = require('./src/routes/authRoutes');
@@ -47,6 +48,7 @@ const iniciarServidor = async () => {
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en el puerto http://localhost:${PORT}`);
+      iniciarTareaCumpleanios();
     });
   } catch (error) {
     console.error('❌ Error al conectar con la base de datos MySQL:', error.message);

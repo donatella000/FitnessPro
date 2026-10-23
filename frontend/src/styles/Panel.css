@@ -526,3 +526,27 @@
     padding: 9px 10px;
   }
 }
+
+.campo__nota {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(3, 23, 10, 0.6);
+}
+
+/* Saludo de cumpleaños en el panel del alumno */
+.cumpleanios {
+  max-width: 620px;
+  margin: 0 auto 28px;
+  padding: 18px 22px;
+  border: 2px solid var(--neon-ink);
+  border-radius: 14px;
+  background: rgba(var(--neon-rgb), 0.18);
+  color: var(--neon-ink);
+  text-align: center;
+}
+
+.cumpleanios strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1.3rem;
+}

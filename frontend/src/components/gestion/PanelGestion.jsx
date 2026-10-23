@@ -10,6 +10,7 @@ import EjerciciosGestion from './EjerciciosGestion';
 import PuntosGestion from './PuntosGestion';
 import EstadisticasGestion from './EstadisticasGestion';
 import AparienciaGestion from './AparienciaGestion';
+import ConfiguracionGestion from './ConfiguracionGestion';
 
 // Pestañas del panel. Las marcadas con soloAdmin no aparecen en la vista de Profesor.
 const PESTANIAS = [
@@ -24,6 +25,7 @@ const PESTANIAS = [
   { id: 'actividades', admin: 'Actividades', soloAdmin: true },
   { id: 'suscripciones', admin: 'Suscripciones', soloAdmin: true },
   { id: 'apariencia', admin: 'Apariencia', soloAdmin: true },
+  { id: 'configuracion', admin: 'Configuración', soloAdmin: true },
 ];
 
 export default function PanelGestion({ esAdmin }) {
@@ -70,6 +72,7 @@ export default function PanelGestion({ esAdmin }) {
       {actual === 'actividades' && <ActividadesGestion />}
       {actual === 'suscripciones' && <SuscripcionesGestion />}
       {actual === 'apariencia' && <AparienciaGestion />}
+      {actual === 'configuracion' && <ConfiguracionGestion />}
     </div>
   );
 }

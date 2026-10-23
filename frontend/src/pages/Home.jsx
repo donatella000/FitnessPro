@@ -5,15 +5,13 @@ import AuthModal from '../components/AuthModal';
 import ActivitiesSection from '../components/ActivitiesSection';
 import AboutSection from '../components/AboutSection';
 import TeamSection from '../components/TeamSection';
+import ContactSection from '../components/ContactSection';
+import { INSTAGRAM_URL, WHATSAPP_URL } from '../datosGimnasio';
 import EmblemaTematico from '../components/EmblemaTematico';
 import FranjaTematica, { temaTieneFranja } from '../components/FranjaTematica';
 import { useAuth } from '../context/AuthContext';
 import { useTema } from '../context/TemaContext';
 import '../styles/Home.css';
-
-// Reemplazá estos links por los perfiles reales del gimnasio.
-const INSTAGRAM_URL = 'https://www.instagram.com/';
-const WHATSAPP_URL = 'https://wa.me/'; // ej: https://wa.me/5492911234567
 
 export default function Home() {
   const { user } = useAuth();
@@ -76,11 +74,7 @@ export default function Home() {
         <AboutSection />
         <TeamSection />
 
-        {/* Sección de ejemplo para que el link "Ubicación y contacto" del navbar tenga destino */}
-        <section id="contacto" className="placeholder">
-          <h2>Ubicación y contacto</h2>
-          <p>Próximamente.</p>
-        </section>
+        <ContactSection />
       </main>
 
       <AuthModal open={authOpen} onClose={closeAuth} />

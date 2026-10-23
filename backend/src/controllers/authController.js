@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { enviarMailRecuperacion } = require('../config/mailer');
+const { darBienvenida } = require('../servicios/puntos');
 
 const LARGO_MINIMO_CLAVE = 6;
 const ROL_ALUMNO = 3;
@@ -78,9 +79,18 @@ const registrar = async (req, res) => {
       contacto_emergencia_tel || null
     ]);
 
+    // Regalo de puntos y correo de bienvenida (si el correo falla, el registro igual queda hecho)
+    const puntos = await darBienvenida({
+      id_usuario: resultado.insertId,
+      nombre,
+      mail,
+      altaPorStaff: false
+    });
+
     return res.status(201).json({
       mensaje: '¡Usuario registrado exitosamente!',
-      id_usuario: resultado.insertId
+      id_usuario: resultado.insertId,
+      puntos_regalo: puntos
     });
   } catch (error) {
     console.error('Error al registrar usuario:', error);

@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { darBienvenida } = require('../servicios/puntos');
 
 const ROL_ADMIN = 1;
 const ROL_PROFESOR = 2;
@@ -179,8 +180,20 @@ const crearUsuario = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, 1)
     `, [dni, nombre.trim(), apellido.trim(), mail.trim().toLowerCase(), claveHasheada, rolNuevo]);
 
+    // A los alumnos nuevos se les regalan puntos y se les envía el correo de bienvenida
+    if (rolNuevo === ROL_ALUMNO) {
+      await darBienvenida({
+        id_usuario: resultado.insertId,
+        nombre: nombre.trim(),
+        mail: mail.trim().toLowerCase(),
+        altaPorStaff: true
+      });
+    }
+
     return res.status(201).json({
-      mensaje: 'Usuario creado. Su contraseña inicial es su DNI y deberá cambiarla al ingresar.',
+      mensaje: rolNuevo === ROL_ALUMNO
+        ? 'Alumno creado. Le enviamos un correo de bienvenida; su contraseña inicial es su DNI.'
+        : 'Usuario creado. Su contraseña inicial es su DNI y deberá cambiarla al ingresar.',
       id_usuario: resultado.insertId
     });
   } catch (error) {
