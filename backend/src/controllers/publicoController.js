@@ -17,7 +17,7 @@ const hhmm = (hora) => String(hora).slice(0, 5);
 const obtenerEquipo = async (req, res) => {
   try {
     const [actividades] = await db.query(`
-      SELECT id_actividad, nombre, descripcion, tipo
+      SELECT id_actividad, nombre, descripcion, tipo, icono
       FROM actividades
       WHERE activo = 1
       ORDER BY (tipo = 'musculacion') DESC, nombre
@@ -25,7 +25,7 @@ const obtenerEquipo = async (req, res) => {
 
     // Horarios de las clases con profesor
     const [deClases] = await db.query(`
-      SELECT c.id_actividad, u.id_usuario AS id_profesor, u.nombre, u.apellido,
+      SELECT c.id_actividad, u.id_usuario AS id_profesor, u.nombre, u.apellido, u.foto,
              h.dia_semana, h.hora_inicio, h.hora_fin
       FROM clases c
       INNER JOIN usuarios u ON c.id_profesor = u.id_usuario
@@ -36,7 +36,7 @@ const obtenerEquipo = async (req, res) => {
 
     // Turnos de los profesores de sala
     const [deSala] = await db.query(`
-      SELECT ps.id_actividad, u.id_usuario AS id_profesor, u.nombre, u.apellido,
+      SELECT ps.id_actividad, u.id_usuario AS id_profesor, u.nombre, u.apellido, u.foto,
              ps.dia_semana, ps.hora_inicio, ps.hora_fin
       FROM profesores_sala ps
       INNER JOIN usuarios u ON ps.id_profesor = u.id_usuario
@@ -63,7 +63,7 @@ const obtenerEquipo = async (req, res) => {
       for (const f of filas) {
         let profe = profesores.find((p) => p.id_profesor === f.id_profesor);
         if (!profe) {
-          profe = { id_profesor: f.id_profesor, nombre: f.nombre, apellido: f.apellido, horarios: [] };
+          profe = { id_profesor: f.id_profesor, nombre: f.nombre, apellido: f.apellido, foto: f.foto || null, horarios: [] };
           profesores.push(profe);
         }
         if (f.dia_semana) {

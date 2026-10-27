@@ -142,3 +142,14 @@
     right: 12px;
   }
 }
+
+/* Foto de perfil dentro del avatar */
+.usermenu__avatar {
+  overflow: hidden;
+}
+
+.usermenu__foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

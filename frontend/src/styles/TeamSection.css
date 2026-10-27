@@ -112,6 +112,26 @@
   transition: fill 0.15s ease;
 }
 
+/* Ícono de profesor (imagen) */
+.team__icono {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  transition: filter 0.15s ease;
+}
+
+/* Con foto de perfil, la foto ocupa toda la lápida */
+.team__tombstone--foto {
+  padding: 0;
+  overflow: hidden;
+}
+
+.team__foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .team__profcard:hover .team__tombstone {
   border-color: var(--neon-ink);
 }
@@ -125,6 +145,11 @@
 
 .team__profcard.is-selected .team__tombstone svg {
   fill: var(--neon);
+}
+
+/* Seleccionado: el ícono negro pasa a blanco sobre la lápida oscura */
+.team__profcard.is-selected .team__icono {
+  filter: invert(1);
 }
 
 .team__profname {

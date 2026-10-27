@@ -550,3 +550,55 @@
   margin-bottom: 4px;
   font-size: 1.3rem;
 }
+
+/* ---------- Ícono de actividad (vista previa en el panel) ---------- */
+.icono-actividad {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 54px;
+  height: 66px;
+  padding-bottom: 8px;
+  background: #03170a;
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+}
+
+.icono-actividad img {
+  width: 70%;
+  height: 60%;
+  object-fit: contain;
+}
+
+.icono-actividad__vacio {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.6rem;
+  text-align: center;
+}
+
+.icono-carga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.icono-carga .campo__nota {
+  flex-basis: 100%;
+}
+
+.icono-celda {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--neon-ink);
+  font: 600 0.8rem/1 var(--font);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

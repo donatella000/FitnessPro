@@ -13,6 +13,20 @@ function CintaArgentina() {
   );
 }
 
+// Tres estrellas doradas dibujadas (no emojis, para que se vean igual en todos los dispositivos)
+function Estrellas() {
+  const estrella = 'M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 16.9 5.9 20.4l1.5-6.8L2.2 9l6.9-.7z';
+  return (
+    <span className="franja__estrellas" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <svg key={i} viewBox="0 0 24 24" focusable="false">
+          <path d={estrella} fill="#f6c445" stroke="#b8860b" strokeWidth="0.8" strokeLinejoin="round" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
 // Franja superior de la portada según el tema activo
 export default function FranjaTematica({ tema }) {
   if (esPatrio(tema)) {
@@ -25,6 +39,19 @@ export default function FranjaTematica({ tema }) {
 
   const texto = TEMAS[tema]?.franja;
   if (!texto) return null;
+
+  // Mundial: tres estrellas a cada lado, por las tres copas
+  if (tema === 'mundial') {
+    return (
+      <div className="franja franja--texto" role="note" aria-label={`${texto} Tres estrellas por las tres copas del mundo.`}>
+        <span className="franja__contenido">
+          <Estrellas />
+          <span>{texto}</span>
+          <Estrellas />
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className={`franja franja--texto${tema === 'primavera' ? ' franja--primavera' : ''}`} role="note">

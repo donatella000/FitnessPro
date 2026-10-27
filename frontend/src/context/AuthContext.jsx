@@ -109,6 +109,14 @@ export function AuthProvider({ children }) {
     [startSession]
   );
 
+  // Actualiza datos guardados de la sesión (por ejemplo, la foto de perfil)
+  const actualizarSesion = useCallback(
+    (cambios) => {
+      startSession({ ...readSession(), ...cambios });
+    },
+    [startSession]
+  );
+
   const logout = useCallback(() => {
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(TOKEN_KEY);
@@ -116,8 +124,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, login, register, logout, solicitarRecuperacion, restablecerPassword, cambiarPassword }),
-    [user, login, register, logout, solicitarRecuperacion, restablecerPassword, cambiarPassword]
+    () => ({ user, login, register, logout, solicitarRecuperacion, restablecerPassword, cambiarPassword, actualizarSesion }),
+    [user, login, register, logout, solicitarRecuperacion, restablecerPassword, cambiarPassword, actualizarSesion]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

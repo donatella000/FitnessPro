@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { validarImagen } = require('../servicios/imagenes');
 
 const ROL_ADMIN = 1;
 const ROL_PROFESOR = 2;
@@ -96,7 +97,7 @@ const obtenerActividades = async (req, res) => {
   try {
     const verTodas = req.query.incluirInactivas && req.usuario.id_rol === ROL_ADMIN;
     const [actividades] = await db.query(`
-      SELECT id_actividad, nombre, descripcion, tipo, activo
+      SELECT id_actividad, nombre, descripcion, tipo, icono, activo
       FROM actividades
       ${verTodas ? '' : 'WHERE activo = 1'}
       ORDER BY nombre ASC
@@ -111,7 +112,7 @@ const obtenerActividades = async (req, res) => {
 // Crear actividad. Si es de tipo musculación, se crea automáticamente
 // su clase (sin profesor), a la que después se le cargan los horarios.
 const crearActividad = async (req, res) => {
-  const { nombre, descripcion, tipo } = req.body;
+  const { nombre, descripcion, tipo, icono } = req.body;
   const conexion = await db.getConnection();
 
   try {
@@ -120,6 +121,11 @@ const crearActividad = async (req, res) => {
     }
 
     const tipoFinal = tipo === 'musculacion' ? 'musculacion' : 'clase';
+
+    if (icono) {
+      const errorIcono = validarImagen(icono, 400);
+      if (errorIcono) return res.status(400).json({ mensaje: errorIcono });
+    }
 
     const [existente] = await conexion.query(
       'SELECT id_actividad FROM actividades WHERE nombre = ?',
@@ -132,8 +138,8 @@ const crearActividad = async (req, res) => {
     await conexion.beginTransaction();
 
     const [resultado] = await conexion.query(
-      'INSERT INTO actividades (nombre, descripcion, tipo) VALUES (?, ?, ?)',
-      [nombre.trim(), descripcion || null, tipoFinal]
+      'INSERT INTO actividades (nombre, descripcion, tipo, icono) VALUES (?, ?, ?, ?)',
+      [nombre.trim(), descripcion || null, tipoFinal, icono || null]
     );
 
     let id_clase = null;
@@ -165,7 +171,22 @@ const crearActividad = async (req, res) => {
 const actualizarActividad = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, activo } = req.body;
+    const { nombre, descripcion, activo, icono } = req.body;
+
+    // icono: una imagen nueva, o null para volver al ícono incluido en la página
+    if (icono) {
+      const errorIcono = validarImagen(icono, 400);
+      if (errorIcono) return res.status(400).json({ mensaje: errorIcono });
+    }
+    if (icono !== undefined) {
+      const [cambio] = await db.query('UPDATE actividades SET icono = ? WHERE id_actividad = ?', [icono || null, id]);
+      // Si solo se cambió el ícono, no hace falta seguir
+      if (nombre === undefined && descripcion === undefined && activo === undefined) {
+        return cambio.affectedRows
+          ? res.json({ mensaje: icono ? 'Ícono actualizado.' : 'Se volvió al ícono original.' })
+          : res.status(404).json({ mensaje: 'Actividad no encontrada.' });
+      }
+    }
 
     if (nombre !== undefined && !nombre.trim()) {
       return res.status(400).json({ mensaje: 'El nombre no puede quedar vacío.' });

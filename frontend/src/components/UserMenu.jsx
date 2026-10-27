@@ -55,7 +55,7 @@ const OPCIONES_POR_ROL = {
     { label: 'Mi rutina', icono: 'rutina', to: '/dashboard?vista=alumno&seccion=rutina' },
     { label: 'Pagos', icono: 'suscripciones', to: '/dashboard?vista=alumno&seccion=pagos' },
     { label: 'Mis puntos', icono: 'puntos', to: '/dashboard?vista=alumno&seccion=puntos' },
-    { label: 'Mis datos', icono: 'perfil', to: '/dashboard?vista=alumno&seccion=perfil' },
+    { label: 'Mi perfil', icono: 'perfil', to: '/dashboard?vista=alumno&seccion=perfil' },
   ],
 };
 
@@ -111,10 +111,14 @@ export default function UserMenu() {
         }}
       >
         <span className="usermenu__avatar" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <circle cx="12" cy="8.5" r="4" />
-            <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" />
-          </svg>
+          {user.foto ? (
+            <img src={user.foto} alt="" className="usermenu__foto" />
+          ) : (
+            <svg viewBox="0 0 24 24" focusable="false">
+              <circle cx="12" cy="8.5" r="4" />
+              <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" />
+            </svg>
+          )}
         </span>
         <span className="usermenu__nombre" ref={nombre}>{user.nombre}</span>
       </button>
@@ -149,6 +153,18 @@ export default function UserMenu() {
           )}
 
           <hr className="usermenu__separador" />
+
+          {user.id_rol !== 3 && (
+            <Link
+              to="/dashboard?vista=alumno&seccion=perfil"
+              role="menuitem"
+              className="usermenu__item"
+              onClick={() => setAbierto(false)}
+            >
+              <Icono nombre="perfil" />
+              Mi perfil
+            </Link>
+          )}
 
           <Link
             to="/cambiar-password"

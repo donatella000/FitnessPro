@@ -64,6 +64,13 @@
   height: 46%;
 }
 
+/* Íconos en imagen (los incluidos o los que carga el admin) */
+.activities__icono {
+  width: 62%;
+  height: 46%;
+  object-fit: contain;
+}
+
 .activities__label {
   font-weight: 700;
   font-size: 0.85rem;

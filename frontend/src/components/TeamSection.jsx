@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
 import { agruparHorarios, obtenerEquipo } from '../services/publico';
+import iconoProfe from '../assets/iconos/profe.png';
 import '../styles/TeamSection.css';
-
-function PersonIcon() {
-  return (
-    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <circle cx="32" cy="18" r="10" />
-      <path d="M32 30c-8 0-14 8-16 20h10l3-10 3 10h0l3-10 3 10h10c-2-12-8-20-16-20z" />
-    </svg>
-  );
-}
 
 const nombreProfe = (p) => `Profe ${p.nombre}`;
 
@@ -121,8 +113,9 @@ export default function TeamSection() {
                         aria-pressed={elegido}
                         onClick={() => elegirProfesor(p.id_profesor)}
                       >
-                        <span className="team__tombstone">
-                          <PersonIcon />
+                        <span className={`team__tombstone${p.foto ? ' team__tombstone--foto' : ''}`}>
+                          {/* Si el profesor cargó su foto de perfil se muestra; si no, el ícono */}
+                          <img src={p.foto || iconoProfe} alt="" className={p.foto ? 'team__foto' : 'team__icono'} />
                         </span>
                         <span className="team__profname">{nombreProfe(p).toUpperCase()}</span>
                       </button>

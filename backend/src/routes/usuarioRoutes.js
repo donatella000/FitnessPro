@@ -7,7 +7,9 @@ const {
   crearUsuario,
   actualizarUsuario,
   eliminarUsuario,
-  reactivarUsuario
+  reactivarUsuario,
+  actualizarFoto,
+  eliminarFoto
 } = require('../controllers/usuarioController');
 
 const { verificarToken, permitirRoles } = require('../middlewares/authMiddleware');
@@ -37,5 +39,9 @@ router.delete('/:id', permitirRoles(1, 2), eliminarUsuario);
 
 // 6. Reactivar un usuario dado de baja
 router.put('/:id/reactivar', permitirRoles(1, 2), reactivarUsuario);
+
+// 7. Foto de perfil (cada usuario la suya; admin y profesor según permisos)
+router.put('/:id/foto', actualizarFoto);
+router.delete('/:id/foto', eliminarFoto);
 
 module.exports = router;

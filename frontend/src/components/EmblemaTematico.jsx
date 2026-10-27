@@ -10,17 +10,25 @@ import { TEMAS, esPatrio } from '../context/TemaContext';
 const CX = 200;
 const CY = 250;
 
-// Ícono y palabra centrados dentro del aro
-function IconoYPalabra({ color = '#ffffff', contorno = 0, colorContorno = '#1a1a1a', cy = CY }) {
+// Ícono y palabra centrados en (CX, cy).
+// "ancho" es el ancho del ícono; la palabra se ubica debajo, proporcional al tamaño.
+const PROPORCION_ICONO = 1124 / 880;
+
+function IconoYPalabra({ color = '#ffffff', contorno = 0, colorContorno = '#1a1a1a', cy = CY, ancho = 150 }) {
+  const alto = ancho * PROPORCION_ICONO;
+  const tamanioPalabra = ancho * 0.24;
+  // El conjunto (ícono + espacio + palabra) queda centrado verticalmente en cy
+  const altoTotal = alto + tamanioPalabra * 1.15;
+  const arriba = cy - altoTotal / 2;
   return (
     <>
-      <IconoEnSvg x={CX - 55} y={cy - 92} ancho={110} alto={140} color={color} contorno={contorno} colorContorno={colorContorno} />
+      <IconoEnSvg x={CX - ancho / 2} y={arriba} ancho={ancho} alto={alto} color={color} contorno={contorno} colorContorno={colorContorno} />
       <text
         x={CX}
-        y={cy + 80}
+        y={arriba + altoTotal}
         textAnchor="middle"
         className="emblema__palabra"
-        fontSize="27"
+        fontSize={tamanioPalabra}
         fill={color}
         stroke={contorno ? colorContorno : 'none'}
         strokeWidth={contorno ? contorno * 1.1 : 0}
@@ -32,20 +40,30 @@ function IconoYPalabra({ color = '#ffffff', contorno = 0, colorContorno = '#1a1a
   );
 }
 
-// Círculo con degradé y aro fino (diseño habitual)
+// Círculo del color del tema con un aro blanco fino adentro (diseño habitual).
+// El aro mide el 95% del círculo, y alrededor queda un resplandor suave.
+const RADIO_CIRCULO = 181;
+const RADIO_ARO = Math.round(RADIO_CIRCULO * 0.95);
+
 function CirculoBase() {
   return (
     <>
       <defs>
-        <radialGradient id="emblema-degrade" cx="50%" cy="50%" r="50%">
+        {/* Relleno del círculo: más claro en el centro y más intenso hacia el borde */}
+        <radialGradient id="emblema-relleno" cx="50%" cy="50%" r="50%">
           <stop offset="0%" style={{ stopColor: 'var(--emblema-1)' }} />
-          <stop offset="35%" style={{ stopColor: 'var(--emblema-2)' }} />
-          <stop offset="62%" style={{ stopColor: 'var(--emblema-3)' }} />
-          <stop offset="100%" style={{ stopColor: 'var(--bg)', stopOpacity: 0 }} />
+          <stop offset="55%" style={{ stopColor: 'var(--emblema-2)' }} />
+          <stop offset="100%" style={{ stopColor: 'var(--emblema-3)' }} />
+        </radialGradient>
+        {/* Resplandor que rodea al círculo */}
+        <radialGradient id="emblema-resplandor" cx="50%" cy="50%" r="50%">
+          <stop offset="80%" style={{ stopColor: 'var(--emblema-2)', stopOpacity: 0.55 }} />
+          <stop offset="100%" style={{ stopColor: 'var(--emblema-2)', stopOpacity: 0 }} />
         </radialGradient>
       </defs>
-      <circle cx={CX} cy={CY} r="200" fill="url(#emblema-degrade)" />
-      <circle cx={CX} cy={CY} r="128" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" />
+      <circle cx={CX} cy={CY} r="210" fill="url(#emblema-resplandor)" />
+      <circle cx={CX} cy={CY} r={RADIO_CIRCULO} fill="url(#emblema-relleno)" />
+      <circle cx={CX} cy={CY} r={RADIO_ARO} fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" />
     </>
   );
 }
@@ -68,7 +86,7 @@ function FraseEnArco({ texto, color }) {
 // ---------- Navidad: gorro de Papá Noel ----------
 function GorroNavidad() {
   return (
-    <g transform={`rotate(-16 ${CX} 120)`}>
+    <g transform={`translate(0 -46) rotate(-16 ${CX} 120)`}>
       <path d="M108,132 Q130,40 230,30 Q300,26 336,62 Q300,58 282,72 Q300,100 292,132 Z" fill="#d62828" />
       <path d="M140,110 Q170,60 230,50" fill="none" stroke="#a4161a" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
       <rect x="96" y="118" width="208" height="36" rx="18" fill="#ffffff" />
@@ -106,8 +124,8 @@ function ManitosConejo() {
   );
   return (
     <>
-      {mano(62, false)}
-      {mano(338, true)}
+      {mano(34, false)}
+      {mano(366, true)}
     </>
   );
 }
@@ -127,38 +145,45 @@ function HuevosPascua() {
   );
 }
 
-// ---------- Mundial: pelota crema y negra ----------
+// ---------- Mundial: pelota blanca y negra con el parche central como fondo del logo ----------
 function Pelota() {
-  const pentagono = (x, y, r, giro = -90) =>
-    Array.from({ length: 5 }, (_, i) => {
-      const a = ((giro + i * 72) * Math.PI) / 180;
+  const R = 182;
+  const poligono = (x, y, r, lados, giro) =>
+    Array.from({ length: lados }, (_, i) => {
+      const a = ((giro + (i * 360) / lados) * Math.PI) / 180;
       return `${x + Math.cos(a) * r},${y + Math.sin(a) * r}`;
     }).join(' ');
 
-  const alrededor = [0, 72, 144, 216, 288].map((g) => {
+  // Paños blancos hexagonales alrededor del parche central (con costura negra)
+  const panios = [36, 108, 180, 252, 324].map((g) => {
     const a = ((g - 90) * Math.PI) / 180;
-    return { x: CX + Math.cos(a) * 128, y: CY + Math.sin(a) * 128, giro: g + 90 };
+    return { x: CX + Math.cos(a) * 158, y: CY + Math.sin(a) * 158, giro: g - 90 };
+  });
+
+  // Parches negros pentagonales entre los paños, cortados por el borde de la pelota
+  const parches = [0, 72, 144, 216, 288].map((g) => {
+    const a = ((g - 90) * Math.PI) / 180;
+    return { x: CX + Math.cos(a) * 176, y: CY + Math.sin(a) * 176, giro: g - 90 };
   });
 
   return (
     <g>
       <defs>
-        <clipPath id="pelota-borde"><circle cx={CX} cy={CY} r="176" /></clipPath>
+        <clipPath id="pelota-borde"><circle cx={CX} cy={CY} r={R} /></clipPath>
       </defs>
-      <circle cx={CX} cy={CY} r="176" fill="#ece0bf" />
-      <g clipPath="url(#pelota-borde)" fill="#1a1a1a">
-        <polygon points={pentagono(CX, CY, 46)} />
-        {alrededor.map((p, i) => (
-          <polygon key={i} points={pentagono(p.x, p.y, 44, p.giro)} />
+      <circle cx={CX} cy={CY} r={R} fill="#ffffff" />
+      <g clipPath="url(#pelota-borde)">
+        {panios.map((p, i) => (
+          <polygon key={`h${i}`} points={poligono(p.x, p.y, 62, 6, p.giro)} fill="#ffffff" stroke="#111111" strokeWidth="5" strokeLinejoin="round" />
         ))}
-        {alrededor.map((p, i) => {
-          const a = Math.atan2(p.y - CY, p.x - CX);
-          return (
-            <line key={`l${i}`} x1={CX + Math.cos(a) * 46} y1={CY + Math.sin(a) * 46} x2={CX + Math.cos(a) * 84} y2={CY + Math.sin(a) * 84} stroke="#1a1a1a" strokeWidth="4" />
-          );
-        })}
+        {parches.map((p, i) => (
+          <polygon key={`p${i}`} points={poligono(p.x, p.y, 50, 5, p.giro)} fill="#111111" stroke="#111111" strokeWidth="5" strokeLinejoin="round" />
+        ))}
       </g>
-      <circle cx={CX} cy={CY} r="176" fill="none" stroke="#1a1a1a" strokeWidth="6" />
+      {/* Parche central: círculo negro que hace de fondo del logo */}
+      <circle cx={CX} cy={CY} r="122" fill="#111111" />
+      <circle cx={CX} cy={CY} r="112" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" />
+      <circle cx={CX} cy={CY} r={R} fill="none" stroke="#111111" strokeWidth="7" />
     </g>
   );
 }
@@ -174,15 +199,15 @@ function Flor() {
       <ellipse cx="252" cy="404" rx="46" ry="18" fill="#56a630" transform="rotate(24 252 404)" />
       <path d="M110,428 Q148,410 186,398 M290,420 Q252,402 214,390" stroke="#3e7d1b" strokeWidth="2.4" fill="none" />
       {petalos.map((a, i) => (
-        <circle key={i} cx={CX + Math.cos(a) * 140} cy={cy + Math.sin(a) * 140} r="58" fill="#f7b0ba" />
+        <circle key={i} cx={CX + Math.cos(a) * 152} cy={cy + Math.sin(a) * 152} r="46" fill="#f7b0ba" />
       ))}
       {petalos.map((a, i) => (
-        <circle key={`i${i}`} cx={CX + Math.cos(a) * 118} cy={cy + Math.sin(a) * 118} r="30" fill="#f26b6b" />
+        <circle key={`i${i}`} cx={CX + Math.cos(a) * 140} cy={cy + Math.sin(a) * 140} r="26" fill="#f26b6b" />
       ))}
       {petalos.map((a, i) => (
-        <line key={`v${i}`} x1={CX + Math.cos(a + 0.39) * 112} y1={cy + Math.sin(a + 0.39) * 112} x2={CX + Math.cos(a + 0.39) * 150} y2={cy + Math.sin(a + 0.39) * 150} stroke="#c2577d" strokeWidth="3" strokeLinecap="round" />
+        <line key={`v${i}`} x1={CX + Math.cos(a + 0.39) * 134} y1={cy + Math.sin(a + 0.39) * 134} x2={CX + Math.cos(a + 0.39) * 168} y2={cy + Math.sin(a + 0.39) * 168} stroke="#c2577d" strokeWidth="3" strokeLinecap="round" />
       ))}
-      <circle cx={CX} cy={cy} r="118" fill="#ffd23f" stroke="#f2b705" strokeWidth="6" />
+      <circle cx={CX} cy={cy} r="138" fill="#ffd23f" stroke="#f2b705" strokeWidth="6" />
     </g>
   );
 }
@@ -225,10 +250,10 @@ export default function EmblemaTematico({ tema }) {
         {tema === 'halloween' && <Calabaza />}
         {!['mundial', 'primavera', 'halloween'].includes(tema) && <CirculoBase />}
 
-        {tema === 'mundial' && <IconoYPalabra contorno={3} colorContorno="#1a1a1a" />}
-        {tema === 'primavera' && <IconoYPalabra contorno={3} colorContorno="#7a4b00" cy={230} />}
-        {tema === 'halloween' && <IconoYPalabra color="#ffd54a" contorno={2.5} colorContorno="#8a3300" cy={290} />}
-        {!['mundial', 'primavera', 'halloween'].includes(tema) && <IconoYPalabra />}
+        {tema === 'mundial' && <IconoYPalabra ancho={112} />}
+        {tema === 'primavera' && <IconoYPalabra contorno={3} colorContorno="#7a4b00" cy={230} ancho={128} />}
+        {tema === 'halloween' && <IconoYPalabra color="#ffd54a" contorno={2.5} colorContorno="#8a3300" cy={292} ancho={150} />}
+        {!['mundial', 'primavera', 'halloween'].includes(tema) && <IconoYPalabra ancho={158} />}
 
         {tema === 'navidad' && <GorroNavidad />}
         {tema === 'pascuas' && <><ManitosConejo /><HuevosPascua /></>}

@@ -1,8 +1,36 @@
 import { useCallback, useEffect, useState } from 'react';
 import api, { mensajeDeError } from '../../services/api';
 import Aviso from './Aviso';
+import { iconoAchicado } from '../../utils/imagenes';
+import { iconoDeActividad } from '../../utils/iconosActividad';
 
-const FORM_VACIO = { nombre: '', tipo: 'clase', descripcion: '' };
+const FORM_VACIO = { nombre: '', tipo: 'clase', descripcion: '', icono: null };
+
+// Vista previa del ícono sobre el banderín negro, como se ve en la portada
+function MuestraIcono({ src }) {
+  return (
+    <span className="icono-actividad" aria-hidden="true">
+      {src ? <img src={src} alt="" /> : <span className="icono-actividad__vacio">Sin ícono</span>}
+    </span>
+  );
+}
+
+// Lee el archivo elegido y lo achica; devuelve null si no es válido
+async function prepararIcono(e, setAviso) {
+  const archivo = e.target.files?.[0];
+  e.target.value = '';
+  if (!archivo) return null;
+  if (!['image/png', 'image/svg+xml', 'image/webp'].includes(archivo.type)) {
+    setAviso({ tipo: 'error', texto: 'El ícono tiene que ser PNG, SVG o WEBP con fondo transparente.' });
+    return null;
+  }
+  try {
+    return await iconoAchicado(archivo);
+  } catch (error) {
+    setAviso({ tipo: 'error', texto: error.message });
+    return null;
+  }
+}
 
 // Solo Admin. Primer paso para armar el gimnasio.
 export default function ActividadesGestion() {
@@ -35,7 +63,7 @@ export default function ActividadesGestion() {
     setGuardando(true);
     setAviso(null);
     try {
-      await api.post('/clases/actividades', form);
+      await api.post('/clases/actividades', { ...form, icono: form.icono || undefined });
       setAviso({
         tipo: 'ok',
         texto: form.tipo === 'musculacion'
@@ -57,6 +85,16 @@ export default function ActividadesGestion() {
       await api.put(`/clases/actividades/${id_actividad}`, datos);
       setAviso({ tipo: 'ok', texto: 'Actividad actualizada.' });
       setEditando(null);
+      cargar();
+    } catch (error) {
+      setAviso({ tipo: 'error', texto: mensajeDeError(error) });
+    }
+  };
+
+  const cambiarIcono = async (actividad, icono) => {
+    try {
+      const { data } = await api.put(`/clases/actividades/${actividad.id_actividad}`, { icono });
+      setAviso({ tipo: 'ok', texto: data.mensaje });
       cargar();
     } catch (error) {
       setAviso({ tipo: 'error', texto: mensajeDeError(error) });
@@ -108,6 +146,33 @@ export default function ActividadesGestion() {
             Descripción (opcional)
             <textarea name="descripcion" value={form.descripcion} onChange={cambiarForm} />
           </label>
+          <div className="campo campo--ancho">
+            Ícono para la portada
+            <div className="icono-carga">
+              <MuestraIcono src={form.icono || iconoDeActividad({ nombre: form.nombre, tipo: form.tipo })} />
+              <label className="btn btn--secundario btn--chico">
+                Elegir imagen
+                <input
+                  type="file"
+                  accept="image/png,image/svg+xml,image/webp"
+                  hidden
+                  onChange={async (e) => {
+                    const icono = await prepararIcono(e, setAviso);
+                    if (icono) setForm((f) => ({ ...f, icono }));
+                  }}
+                />
+              </label>
+              {form.icono && (
+                <button type="button" className="btn btn--chico btn--secundario" onClick={() => setForm((f) => ({ ...f, icono: null }))}>
+                  Quitar
+                </button>
+              )}
+              <span className="campo__nota">
+                Conviene una imagen blanca con fondo transparente (PNG), porque se muestra sobre el banderín negro.
+                Si no cargás ninguna, Musculación, Yoga, Pilates y Spinning usan su ícono incluido.
+              </span>
+            </div>
+          </div>
           <div className="form__acciones">
             <button type="submit" className="btn" disabled={guardando}>
               {guardando ? 'Creando…' : 'Crear actividad'}
@@ -126,6 +191,7 @@ export default function ActividadesGestion() {
             <table className="tabla">
               <thead>
                 <tr>
+                  <th>Ícono</th>
                   <th>Nombre</th>
                   <th>Tipo</th>
                   <th>Descripción</th>
@@ -136,13 +202,14 @@ export default function ActividadesGestion() {
               <tbody>
                 {actividades.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="tabla__vacia">Todavía no hay actividades. Creá la primera arriba.</td>
+                    <td colSpan={6} className="tabla__vacia">Todavía no hay actividades. Creá la primera arriba.</td>
                   </tr>
                 )}
 
                 {actividades.map((a) =>
                   editando?.id_actividad === a.id_actividad ? (
                     <tr key={a.id_actividad}>
+                      <td><MuestraIcono src={iconoDeActividad(a)} /></td>
                       <td>
                         <input
                           className="input-tabla"
@@ -170,6 +237,28 @@ export default function ActividadesGestion() {
                     </tr>
                   ) : (
                     <tr key={a.id_actividad} className={a.activo ? '' : 'is-inactivo'}>
+                      <td>
+                        <div className="icono-celda">
+                          <MuestraIcono src={iconoDeActividad(a)} />
+                          <label className="btn-link">
+                            Cambiar
+                            <input
+                              type="file"
+                              accept="image/png,image/svg+xml,image/webp"
+                              hidden
+                              onChange={async (e) => {
+                                const icono = await prepararIcono(e, setAviso);
+                                if (icono) cambiarIcono(a, icono);
+                              }}
+                            />
+                          </label>
+                          {a.icono && (
+                            <button type="button" className="btn-link" onClick={() => cambiarIcono(a, null)}>
+                              Original
+                            </button>
+                          )}
+                        </div>
+                      </td>
                       <td>{a.nombre}</td>
                       <td>{a.tipo === 'musculacion' ? 'Turnos libres' : 'Clase con profesor'}</td>
                       <td>{a.descripcion || '-'}</td>

@@ -96,7 +96,7 @@ body,
 }
 
 /* ---------- Emblema de la portada ---------- */
-.hero__emblem--tematico {
+.hero__emblem.hero__emblem--tematico {
   width: min(100%, 480px);
   aspect-ratio: 400 / 460;
   background: none;
@@ -171,4 +171,21 @@ body,
   .hero--con-franja {
     padding-top: calc(var(--nav-h) + 76px);
   }
+}
+
+/* Franja del Mundial: frase entre estrellas */
+.franja__contenido {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 22px);
+}
+
+.franja__estrellas {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.franja__estrellas svg {
+  width: clamp(16px, 2.4vw, 26px);
+  height: clamp(16px, 2.4vw, 26px);
 }

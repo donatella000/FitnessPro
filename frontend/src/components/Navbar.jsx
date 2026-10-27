@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import UserMenu from './UserMenu';
 import Escarapela from './Escarapela';
+import Camiseta from './Camiseta';
 import { esPatrio, useTema } from '../context/TemaContext';
 import '../styles/Navbar.css';
 
@@ -20,9 +21,11 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <a className="navbar__brand" href="/#inicio" aria-label="FitnessPro, ir al inicio">
-        {/* En las fechas patrias, el asterisco se convierte en escarapela */}
+        {/* En las fechas patrias el asterisco se convierte en escarapela, y en el Mundial en camiseta */}
         {esPatrio(tema) ? (
           <Escarapela className="navbar__escarapela" />
+        ) : tema === 'mundial' ? (
+          <Camiseta className="navbar__escarapela" />
         ) : (
           <svg className="navbar__mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
             <g fill="currentColor">

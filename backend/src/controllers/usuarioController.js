@@ -2,6 +2,7 @@ const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const { darBienvenida } = require('../servicios/puntos');
 const { revisarCumpleanios } = require('../tareas/cumpleanios');
+const { validarImagen } = require('../servicios/imagenes');
 
 const ROL_ADMIN = 1;
 const ROL_PROFESOR = 2;
@@ -104,7 +105,7 @@ const obtenerUsuarioPorId = async (req, res) => {
     }
 
     const [usuarios] = await db.query(`
-      SELECT ${CAMPOS_USUARIO}
+      SELECT ${CAMPOS_USUARIO}, u.foto
       FROM usuarios u
       INNER JOIN rol r ON u.id_rol = r.id_rol
       WHERE u.id_usuario = ?
@@ -342,11 +343,62 @@ const reactivarUsuario = async (req, res) => {
   }
 };
 
+// ==========================================
+// 7. FOTO DE PERFIL
+// ==========================================
+// PUT /api/usuarios/:id/foto   Body: { foto: 'data:image/jpeg;base64,...' }
+// Cada usuario cambia la suya; el admin y el profesor, según los permisos de siempre.
+const actualizarFoto = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const objetivo = await buscarUsuario(id);
+    if (!objetivo) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
+    }
+    if (!puedeGestionar(req.usuario, objetivo)) {
+      return res.status(403).json({ mensaje: 'No tenés permiso para cambiar esta foto.' });
+    }
+
+    const error = validarImagen(req.body.foto, 600);
+    if (error) {
+      return res.status(400).json({ mensaje: error });
+    }
+
+    await db.query('UPDATE usuarios SET foto = ? WHERE id_usuario = ?', [req.body.foto, id]);
+    return res.json({ mensaje: 'Foto de perfil actualizada.' });
+  } catch (error) {
+    console.error('Error al actualizar la foto:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al guardar la foto.' });
+  }
+};
+
+// DELETE /api/usuarios/:id/foto
+const eliminarFoto = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const objetivo = await buscarUsuario(id);
+    if (!objetivo) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
+    }
+    if (!puedeGestionar(req.usuario, objetivo)) {
+      return res.status(403).json({ mensaje: 'No tenés permiso para quitar esta foto.' });
+    }
+
+    await db.query('UPDATE usuarios SET foto = NULL WHERE id_usuario = ?', [id]);
+    return res.json({ mensaje: 'Foto de perfil eliminada.' });
+  } catch (error) {
+    console.error('Error al eliminar la foto:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al quitar la foto.' });
+  }
+};
+
 module.exports = {
   obtenerUsuarios,
   obtenerUsuarioPorId,
   crearUsuario,
   actualizarUsuario,
   eliminarUsuario,
-  reactivarUsuario
+  reactivarUsuario,
+  actualizarFoto,
+  eliminarFoto
 };

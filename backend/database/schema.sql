@@ -40,6 +40,7 @@ CREATE TABLE usuarios (
     numero                  VARCHAR(10)  NULL,
     fecha_nacimiento        DATE NULL,
     sexo                    ENUM('M', 'F', 'Otro') NULL,
+    foto                    MEDIUMTEXT NULL,   -- foto de perfil (data URL)
     contacto_emergencia_nombre VARCHAR(100) NULL,
     contacto_emergencia_tel    VARCHAR(20)  NULL,
     puntos                  INT NOT NULL DEFAULT 0,   -- saldo actual
@@ -59,6 +60,7 @@ CREATE TABLE actividades (
     -- 'musculacion': turnos libres por hora, sin elegir profesor
     -- 'clase': el alumno elige profesor y horario
     tipo         ENUM('musculacion', 'clase') NOT NULL DEFAULT 'clase',
+    icono        MEDIUMTEXT NULL,   -- imagen (data URL); vacío = ícono incluido en la página
     activo       TINYINT NOT NULL DEFAULT 1
 );
 

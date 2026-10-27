@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { mensajeDeError } from '../../services/api';
 import Aviso from '../gestion/Aviso';
+import FotoPerfil from '../FotoPerfil';
+import { useAuth } from '../../context/AuthContext';
 
 const CAMPOS = [
   'mail', 'telefono', 'calle', 'numero', 'fecha_nacimiento', 'sexo',
@@ -13,6 +15,7 @@ export default function AlumnoPerfil({ perfil, onGuardado }) {
   const [form, setForm] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [guardando, setGuardando] = useState(false);
+  const { user, actualizarSesion } = useAuth();
 
   // Cuando llegan los datos, se cargan en el formulario
   useEffect(() => {
@@ -45,10 +48,20 @@ export default function AlumnoPerfil({ perfil, onGuardado }) {
 
   return (
     <section className="alumno__seccion">
-      <h2 className="seccion__titulo">Mis datos</h2>
+      <h2 className="seccion__titulo">Mi perfil</h2>
       <p className="seccion__ayuda">
         {perfil.nombre} {perfil.apellido}, DNI {perfil.dni}. Para corregir tu nombre o tu DNI, acercate a recepción.
       </p>
+
+      <FotoPerfil
+        idUsuario={perfil.id_usuario}
+        foto={perfil.foto}
+        nombre={perfil.nombre}
+        onCambio={(foto) => {
+          // Si es la propia foto, se actualiza también el avatar del menú
+          if (perfil.id_usuario === user.id_usuario) actualizarSesion({ foto });
+        }}
+      />
 
       <Aviso aviso={aviso} onCerrar={() => setAviso(null)} />
 

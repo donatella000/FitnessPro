@@ -123,6 +123,7 @@ const login = async (req, res) => {
         u.id_rol,
         u.debe_cambiar_password,
         u.activo,
+        u.foto,
         r.descripcion AS rol_nombre
       FROM usuarios u
       INNER JOIN rol r ON u.id_rol = r.id_rol
@@ -171,7 +172,8 @@ const login = async (req, res) => {
         id_rol: usuario.id_rol,
         rol: usuario.rol_nombre,
         // Si es true, el frontend tiene que llevarlo a la pantalla de cambio de contraseña
-        debe_cambiar_password: Boolean(usuario.debe_cambiar_password)
+        debe_cambiar_password: Boolean(usuario.debe_cambiar_password),
+        foto: usuario.foto || null
       }
     });
   } catch (error) {
