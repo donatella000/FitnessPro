@@ -20,6 +20,20 @@ export default function UsuariosGestion({ esAdmin }) {
   const [guardando, setGuardando] = useState(false);
 
   const [editando, setEditando] = useState(null); // { id_usuario, nombre, apellido, mail, dni }
+  const [resumen, setResumen] = useState(null); // cantidad de usuarios por rol
+
+  const cargarResumen = useCallback(async () => {
+    try {
+      const { data } = await api.get('/usuarios/resumen');
+      setResumen(data);
+    } catch {
+      // Si falla, simplemente no se muestran los totales
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarResumen();
+  }, [cargarResumen]);
 
   const cargar = useCallback(async () => {
     try {
@@ -63,6 +77,7 @@ export default function UsuariosGestion({ esAdmin }) {
       setAviso({ tipo: 'ok', texto: data.mensaje });
       setForm(FORM_VACIO);
       cargar();
+      cargarResumen();
     } catch (error) {
       setAviso({ tipo: 'error', texto: mensajeDeError(error) });
     } finally {
@@ -89,6 +104,7 @@ export default function UsuariosGestion({ esAdmin }) {
         : await api.put(`/usuarios/${usuario.id_usuario}/reactivar`);
       setAviso({ tipo: 'ok', texto: data.mensaje });
       cargar();
+      cargarResumen();
     } catch (error) {
       setAviso({ tipo: 'error', texto: mensajeDeError(error) });
     }
@@ -145,6 +161,37 @@ export default function UsuariosGestion({ esAdmin }) {
       <section className="seccion">
         <h2 className="seccion__titulo">{esAdmin ? 'Usuarios' : 'Alumnos'}</h2>
 
+        {resumen && (
+          <div className="resumen-usuarios">
+            {[
+              esAdmin && {
+                rol: '',
+                titulo: 'Total de usuarios',
+                activos: resumen.alumnos.activos + resumen.profesores.activos + resumen.administradores.activos,
+                deBaja: resumen.alumnos.de_baja + resumen.profesores.de_baja + resumen.administradores.de_baja,
+              },
+              { rol: '3', titulo: 'Alumnos', activos: resumen.alumnos.activos, deBaja: resumen.alumnos.de_baja },
+              esAdmin && { rol: '2', titulo: 'Profesores', activos: resumen.profesores.activos, deBaja: resumen.profesores.de_baja },
+              esAdmin && { rol: '1', titulo: 'Administradores', activos: resumen.administradores.activos, deBaja: resumen.administradores.de_baja },
+            ].filter(Boolean).map((c) => (
+              <button
+                key={c.titulo}
+                type="button"
+                className={`resumen-usuarios__tarjeta${esAdmin && rol === c.rol ? ' is-activa' : ''}`}
+                onClick={() => esAdmin && setRol(c.rol)}
+                disabled={!esAdmin}
+                title={esAdmin ? `Ver ${c.titulo.toLowerCase()}` : undefined}
+              >
+                <span className="resumen-usuarios__titulo">{c.titulo}</span>
+                <strong className="resumen-usuarios__numero">{c.activos}</strong>
+                <span className="resumen-usuarios__detalle">
+                  {c.deBaja > 0 ? `activos, ${c.deBaja} de baja` : 'activos'}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="form form--compacto" style={{ marginBottom: 16 }}>
           <label className="campo">
             Buscar
@@ -172,6 +219,14 @@ export default function UsuariosGestion({ esAdmin }) {
             </label>
           </div>
         </div>
+
+        {!cargando && (
+          <p className="tabla__conteo">
+            {usuarios.length === 1 ? 'Se muestra 1 usuario' : `Se muestran ${usuarios.length} usuarios`}
+            {buscar.trim() ? ` que coinciden con "${buscar.trim()}"` : ''}
+            {verInactivos ? ', incluidos los dados de baja' : ''}.
+          </p>
+        )}
 
         {cargando ? (
           <p className="cargando">Cargando…</p>

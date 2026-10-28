@@ -88,6 +88,38 @@ const obtenerUsuarios = async (req, res) => {
 };
 
 // ==========================================
+// 1 bis. RESUMEN: CANTIDAD DE USUARIOS POR ROL (Admin y Profesor)
+// ==========================================
+// GET /api/usuarios/resumen
+// Devuelve, por rol, cuántos están activos y cuántos dados de baja.
+// El profesor solo recibe el número de alumnos.
+const obtenerResumenUsuarios = async (req, res) => {
+  try {
+    const [filas] = await db.query(`
+      SELECT id_rol, SUM(activo = 1) AS activos, SUM(activo = 0) AS de_baja
+      FROM usuarios
+      GROUP BY id_rol
+    `);
+
+    const contar = (rol) => {
+      const fila = filas.find((f) => f.id_rol === rol);
+      return { activos: Number(fila?.activos || 0), de_baja: Number(fila?.de_baja || 0) };
+    };
+
+    const resumen = { alumnos: contar(ROL_ALUMNO) };
+    if (req.usuario.id_rol === ROL_ADMIN) {
+      resumen.profesores = contar(ROL_PROFESOR);
+      resumen.administradores = contar(ROL_ADMIN);
+    }
+
+    return res.json(resumen);
+  } catch (error) {
+    console.error('Error al obtener el resumen de usuarios:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor al obtener el resumen.' });
+  }
+};
+
+// ==========================================
 // 2. OBTENER UN USUARIO POR ID
 // ==========================================
 // Incluye sus suscripciones vigentes (abono, vencimiento y turnos restantes).
@@ -394,6 +426,7 @@ const eliminarFoto = async (req, res) => {
 
 module.exports = {
   obtenerUsuarios,
+  obtenerResumenUsuarios,
   obtenerUsuarioPorId,
   crearUsuario,
   actualizarUsuario,

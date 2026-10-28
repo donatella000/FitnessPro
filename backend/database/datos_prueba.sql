@@ -230,6 +230,136 @@ JOIN horarios_clase h
 WHERE d.n BETWEEN 18 AND 40
   AND h.dia_semana IN (1, 3, 5);
 
+-- ---------------------------------------------------------------------
+-- MÁS ALUMNOS, CON HISTORIAL 2025-2026 (para que las estadísticas se vean reales)
+-- ---------------------------------------------------------------------
+-- 24 alumnos más (en total 30), inscriptos en distintos meses de 2025 y 2026,
+-- con más inscripciones en septiembre. Cada uno pagó su abono mensual mes a mes
+-- desde que se inscribió; algunos dejaron de venir después de unos meses
+-- (columna meses) y el resto sigue activo hasta hoy.
+
+INSERT INTO usuarios
+  (id_usuario, dni, nombre, apellido, mail, password_hash, id_rol, telefono, fecha_nacimiento, sexo, fecha_registro)
+VALUES
+(15, 41002055, 'Valentina', 'Acosta', 'valentina.acosta@prueba.com', @clave, 3, '291 6015105', '1999-04-11', 'F', '2025-01-14 10:00:00'),
+(16, 41002192, 'Martín', 'Benítez', 'martin.benitez@prueba.com', @clave, 3, '291 6016112', '1990-08-02', 'M', '2025-02-10 10:00:00'),
+(17, 41002329, 'Camila', 'Castro', 'camila.castro@prueba.com', @clave, 3, '291 6017119', '1996-12-19', 'F', '2025-04-07 10:00:00'),
+(18, 41002466, 'Nicolás', 'Domínguez', 'nicolas.dominguez@prueba.com', @clave, 3, '291 6018126', '1985-03-27', 'M', '2025-05-19 10:00:00'),
+(19, 41002603, 'Florencia', 'Escobar', 'florencia.escobar@prueba.com', @clave, 3, '291 6019133', '2002-06-30', 'F', '2025-07-08 10:00:00'),
+(20, 41002740, 'Agustín', 'Ferreyra', 'agustin.ferreyra@prueba.com', @clave, 3, '291 6020140', '1994-10-05', 'M', '2025-08-21 10:00:00'),
+(21, 41002877, 'Micaela', 'Giménez', 'micaela.gimenez@prueba.com', @clave, 3, '291 6021147', '2000-02-14', 'F', '2025-09-02 10:00:00'),
+(22, 41003014, 'Santiago', 'Herrera', 'santiago.herrera@prueba.com', @clave, 3, '291 6022154', '1998-09-23', 'M', '2025-09-09 10:00:00'),
+(23, 41003151, 'Julieta', 'Ibáñez', 'julieta.ibañez@prueba.com', @clave, 3, '291 6023161', '1992-01-08', 'F', '2025-09-16 10:00:00'),
+(24, 41003288, 'Facundo', 'Juárez', 'facundo.juarez@prueba.com', @clave, 3, '291 6024168', '1988-07-17', 'M', '2025-09-25 10:00:00'),
+(25, 41003425, 'Rocío', 'Ledesma', 'rocio.ledesma@prueba.com', @clave, 3, '291 6025175', '1983-11-29', 'F', '2025-10-13 10:00:00'),
+(26, 41003562, 'Ezequiel', 'Molina', 'ezequiel.molina@prueba.com', @clave, 3, '291 6026182', '1975-05-04', 'M', '2025-12-01 10:00:00'),
+(27, 41003699, 'Agustina', 'Navarro', 'agustina.navarro@prueba.com', @clave, 3, '291 6027189', '2003-03-21', 'F', '2026-01-12 10:00:00'),
+(28, 41003836, 'Gonzalo', 'Ortiz', 'gonzalo.ortiz@prueba.com', @clave, 3, '291 6028196', '1997-08-09', 'M', '2026-02-03 10:00:00'),
+(29, 41003973, 'Carolina', 'Paz', 'carolina.paz@prueba.com', @clave, 3, '291 6029203', '1989-04-16', 'F', '2026-02-23 10:00:00'),
+(30, 41004110, 'Lucas', 'Quiroga', 'lucas.quiroga@prueba.com', @clave, 3, '291 6030210', '2001-12-07', 'M', '2026-03-09 10:00:00'),
+(31, 41004247, 'Milagros', 'Ramos', 'milagros.ramos@prueba.com', @clave, 3, '291 6031217', '1995-10-26', 'F', '2026-03-30 10:00:00'),
+(32, 41004384, 'Joaquín', 'Suárez', 'joaquin.suarez@prueba.com', @clave, 3, '291 6032224', '1993-06-13', 'M', '2026-04-20 10:00:00'),
+(33, 41004521, 'Daniela', 'Torres', 'daniela.torres@prueba.com', @clave, 3, '291 6033231', '1980-02-02', 'F', '2026-06-15 10:00:00'),
+(34, 41004658, 'Matías', 'Urquiza', 'matias.urquiza@prueba.com', @clave, 3, '291 6034238', '2004-09-18', 'M', '2026-07-06 10:00:00'),
+(35, 41004795, 'Brenda', 'Vázquez', 'brenda.vazquez@prueba.com', @clave, 3, '291 6035245', '1991-07-24', 'F', '2026-08-10 10:00:00'),
+(36, 41004932, 'Tobías', 'Zalazar', 'tobias.zalazar@prueba.com', @clave, 3, '291 6036252', '2000-05-01', 'M', '2026-09-01 10:00:00'),
+(37, 41005069, 'Antonella', 'Sosa', 'antonella.sosa@prueba.com', @clave, 3, '291 6037259', '1998-01-30', 'F', '2026-09-08 10:00:00'),
+(38, 41005206, 'Federico', 'Luna', 'federico.luna@prueba.com', @clave, 3, '291 6038266', '1986-11-11', 'M', '2026-09-22 10:00:00');
+
+-- Plan de cada alumno: suscripción mensual, clase y horario donde entrena, desde cuándo y por cuántos meses
+DROP TEMPORARY TABLE IF EXISTS plan_alumno;
+CREATE TEMPORARY TABLE plan_alumno (
+  id_usuario INT PRIMARY KEY, id_suscripcion INT, id_clase INT, hora TIME, dias VARCHAR(10), inicio DATE, meses INT NULL
+);
+INSERT INTO plan_alumno (id_usuario, id_suscripcion, id_clase, hora, dias, inicio, meses) VALUES
+(15, 1, 1, '09:00:00', '1,3,5', DATE_ADD('2025-01-14', INTERVAL 2 DAY), NULL),
+(16, 13, 5, '20:00:00', '1,3,5', DATE_ADD('2025-02-10', INTERVAL 2 DAY), 6),
+(17, 4, 3, '19:00:00', '1,3', DATE_ADD('2025-04-07', INTERVAL 2 DAY), NULL),
+(18, 1, 1, '18:00:00', '1,3,5', DATE_ADD('2025-05-19', INTERVAL 2 DAY), 8),
+(19, 10, 4, '18:00:00', '2,4', DATE_ADD('2025-07-08', INTERVAL 2 DAY), NULL),
+(20, 1, 1, '19:00:00', '1,3,5', DATE_ADD('2025-08-21', INTERVAL 2 DAY), NULL),
+(21, 1, 1, '10:00:00', '1,3,5', DATE_ADD('2025-09-02', INTERVAL 2 DAY), NULL),
+(22, 13, 5, '20:00:00', '1,3,5', DATE_ADD('2025-09-09', INTERVAL 2 DAY), 4),
+(23, 4, 2, '08:00:00', '2,4', DATE_ADD('2025-09-16', INTERVAL 2 DAY), NULL),
+(24, 1, 1, '20:00:00', '1,3,5', DATE_ADD('2025-09-25', INTERVAL 2 DAY), NULL),
+(25, 10, 4, '18:00:00', '2,4', DATE_ADD('2025-10-13', INTERVAL 2 DAY), 5),
+(26, 1, 1, '08:00:00', '1,3,5', DATE_ADD('2025-12-01', INTERVAL 2 DAY), NULL),
+(27, 13, 5, '20:00:00', '1,3,5', DATE_ADD('2026-01-12', INTERVAL 2 DAY), NULL),
+(28, 1, 1, '12:00:00', '1,3,5', DATE_ADD('2026-02-03', INTERVAL 2 DAY), NULL),
+(29, 4, 3, '19:00:00', '1,3', DATE_ADD('2026-02-23', INTERVAL 2 DAY), 3),
+(30, 1, 1, '17:00:00', '1,3,5', DATE_ADD('2026-03-09', INTERVAL 2 DAY), NULL),
+(31, 10, 4, '18:00:00', '2,4', DATE_ADD('2026-03-30', INTERVAL 2 DAY), NULL),
+(32, 1, 1, '21:00:00', '1,3,5', DATE_ADD('2026-04-20', INTERVAL 2 DAY), NULL),
+(33, 4, 2, '08:00:00', '2,4', DATE_ADD('2026-06-15', INTERVAL 2 DAY), NULL),
+(34, 13, 5, '20:00:00', '1,3,5', DATE_ADD('2026-07-06', INTERVAL 2 DAY), NULL),
+(35, 1, 1, '11:00:00', '1,3,5', DATE_ADD('2026-08-10', INTERVAL 2 DAY), NULL),
+(36, 1, 1, '18:00:00', '1,3,5', DATE_ADD('2026-09-01', INTERVAL 2 DAY), NULL),
+(37, 4, 3, '19:00:00', '1,3', DATE_ADD('2026-09-08', INTERVAL 2 DAY), NULL),
+(38, 1, 1, '09:00:00', '1,3,5', DATE_ADD('2026-09-22', INTERVAL 2 DAY), NULL);
+
+-- Tabla auxiliar con los meses de abono de cada alumno (0, 1, 2, ...)
+DROP TEMPORARY TABLE IF EXISTS meses_n;
+CREATE TEMPORARY TABLE meses_n (k INT PRIMARY KEY);
+INSERT INTO meses_n (k) SELECT n - 1 FROM numeros WHERE n <= 30;
+
+-- Un pago por mes: desde el inicio hasta que dejó de venir, o hasta hoy si sigue activo
+INSERT INTO pagos (id_usuario, id_suscripcion, monto, metodo_pago, estado, registrado_por, fecha_pago)
+SELECT p.id_usuario, p.id_suscripcion, s.precio,
+       ELT(1 + MOD(p.id_usuario + m.k, 3), 'efectivo', 'mercadopago', 'tarjeta'),
+       'aprobado',
+       IF(MOD(p.id_usuario + m.k, 3) = 1, NULL, 1),
+       TIMESTAMP(DATE_ADD(p.inicio, INTERVAL 30 * m.k DAY), '18:00:00')
+FROM plan_alumno p
+JOIN meses_n m
+JOIN suscripciones s ON s.id_suscripcion = p.id_suscripcion
+WHERE DATE_ADD(p.inicio, INTERVAL 30 * m.k DAY) <= CURDATE()
+  AND (p.meses IS NULL OR m.k < p.meses);
+
+-- El abono que generó cada pago (30 días desde el pago)
+INSERT INTO suscripciones_alumno (id_usuario, id_suscripcion, id_pago, fecha_inicio, fecha_fin, turnos_totales)
+SELECT pg.id_usuario, pg.id_suscripcion, pg.id_pago, DATE(pg.fecha_pago),
+       DATE_ADD(DATE(pg.fecha_pago), INTERVAL 30 DAY), s.cantidad_turnos
+FROM pagos pg
+JOIN plan_alumno p ON p.id_usuario = pg.id_usuario
+JOIN suscripciones s ON s.id_suscripcion = pg.id_suscripcion;
+
+-- Días desde el 1/1/2025 hasta hoy, para generar el historial de turnos
+-- (MySQL no deja unir una tabla temporal consigo misma, por eso se copia)
+DROP TEMPORARY TABLE IF EXISTS numeros_b;
+CREATE TEMPORARY TABLE numeros_b (n INT PRIMARY KEY);
+INSERT INTO numeros_b (n) SELECT n FROM numeros;
+DROP TEMPORARY TABLE IF EXISTS dias;
+CREATE TEMPORARY TABLE dias (fecha DATE PRIMARY KEY);
+INSERT INTO dias (fecha)
+SELECT DATE_ADD('2025-01-01', INTERVAL (a.n - 1) + 45 * (b.n - 1) DAY)
+FROM numeros a JOIN numeros_b b
+WHERE (a.n - 1) + 45 * (b.n - 1) <= DATEDIFF(CURDATE(), '2025-01-01');
+
+-- Turnos de cada abono en los días y la hora de su clase (antes de la semana actual).
+-- Uno de cada cinco queda como ausente.
+INSERT INTO turnos (id_usuario, id_horario, id_suscripcion_alumno, fecha, estado, fecha_reserva)
+SELECT sa.id_usuario, h.id_horario, sa.id_suscripcion_alumno, d.fecha,
+       IF(MOD(sa.id_usuario * 3 + DAYOFYEAR(d.fecha), 5) = 0, 'reservado', 'asistido'),
+       TIMESTAMP(DATE_SUB(d.fecha, INTERVAL 1 DAY), '12:00:00')
+FROM suscripciones_alumno sa
+JOIN plan_alumno p ON p.id_usuario = sa.id_usuario
+JOIN dias d ON d.fecha >= sa.fecha_inicio AND d.fecha < sa.fecha_fin
+JOIN horarios_clase h
+  ON h.id_clase = p.id_clase AND h.hora_inicio = p.hora
+ AND h.dia_semana = WEEKDAY(d.fecha) + 1
+WHERE FIND_IN_SET(WEEKDAY(d.fecha) + 1, p.dias) > 0
+  AND YEARWEEK(d.fecha, 1) < YEARWEEK(CURDATE(), 1);
+
+-- Regalo de bienvenida de los alumnos nuevos, en su fecha de alta
+INSERT INTO movimientos_puntos (id_usuario, cantidad, motivo, descripcion, fecha)
+SELECT id_usuario, 500, 'bienvenida', 'Regalo de bienvenida', fecha_registro
+FROM usuarios WHERE id_usuario BETWEEN 15 AND 38;
+
+DROP TEMPORARY TABLE IF EXISTS plan_alumno;
+DROP TEMPORARY TABLE IF EXISTS meses_n;
+DROP TEMPORARY TABLE IF EXISTS dias;
+DROP TEMPORARY TABLE IF EXISTS numeros_b;
+
 -- Asistencias de los turnos a los que fueron (por molinete, 5 minutos antes)
 INSERT INTO asistencias (id_turno, id_usuario, fecha_hora, tipo, puntos_otorgados)
 SELECT t.id_turno, t.id_usuario, TIMESTAMP(t.fecha, h.hora_inicio) - INTERVAL 5 MINUTE, 'molinete', 10
@@ -325,19 +455,35 @@ INSERT INTO canjes (id_usuario, id_premio, puntos_usados, estado, fecha) VALUES
 INSERT INTO movimientos_puntos (id_usuario, cantidad, motivo, descripcion, fecha) VALUES
 (9, -800, 'canje', 'Canje: Botella FitnessPro', NOW() - INTERVAL 3 DAY);
 
+-- Canjes de otros alumnos durante 2025 y 2026
+INSERT INTO canjes (id_usuario, id_premio, puntos_usados, estado, fecha) VALUES
+(15, 4, 800, 'entregado', '2025-06-10 19:00:00'),
+(17, 3, 1000, 'entregado', '2025-11-04 18:30:00'),
+(20, 2, 1200, 'entregado', '2026-02-17 20:00:00'),
+(21, 4, 800, 'entregado', '2026-04-22 11:00:00'),
+(24, 2, 1200, 'entregado', '2026-07-30 19:15:00'),
+(26, 3, 1000, 'pendiente', NOW() - INTERVAL 1 DAY);
+INSERT INTO movimientos_puntos (id_usuario, cantidad, motivo, descripcion, fecha)
+SELECT c.id_usuario, -c.puntos_usados, 'canje', CONCAT('Canje: ', p.nombre), c.fecha
+FROM canjes c JOIN premios p ON p.id_premio = c.id_premio
+WHERE c.id_usuario BETWEEN 15 AND 38;
+
 -- Saldo de cada alumno = suma de sus movimientos
 UPDATE usuarios u
 SET puntos = COALESCE((SELECT SUM(m.cantidad) FROM movimientos_puntos m WHERE m.id_usuario = u.id_usuario), 0)
 WHERE u.id_rol = 3;
 
--- Fechas de alta repartidas, para que las estadísticas de inscripciones
--- nuevas muestren meses distintos
-UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 120 DAY WHERE id_rol = 2;
-UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 21 DAY WHERE id_usuario IN (7, 9);
-UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 16 DAY WHERE id_usuario = 8;
-UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 41 DAY WHERE id_usuario = 10;
-UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 2 DAY  WHERE id_usuario = 11;
-UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 75 DAY WHERE id_usuario = 12;
+-- Fechas de alta de los alumnos originales y de los profesores, repartidas en 2025-2026
+UPDATE usuarios SET fecha_registro = '2024-12-02 09:00:00' WHERE id_rol = 2;
+UPDATE usuarios SET fecha_registro = '2025-09-11 10:00:00' WHERE id_usuario = 7;   -- Juan
+UPDATE usuarios SET fecha_registro = '2025-03-08 10:00:00' WHERE id_usuario = 8;   -- Ana
+UPDATE usuarios SET fecha_registro = '2026-09-03 10:00:00' WHERE id_usuario = 9;   -- Lucía
+UPDATE usuarios SET fecha_registro = '2025-11-20 10:00:00' WHERE id_usuario = 10;  -- Pedro
+UPDATE usuarios SET fecha_registro = NOW() - INTERVAL 2 DAY WHERE id_usuario = 11; -- Sofía
+UPDATE usuarios SET fecha_registro = '2025-06-15 10:00:00' WHERE id_usuario = 12;  -- Tomás
+UPDATE movimientos_puntos m JOIN usuarios u ON u.id_usuario = m.id_usuario
+SET m.fecha = u.fecha_registro
+WHERE m.motivo = 'bienvenida' AND u.id_usuario BETWEEN 7 AND 12;
 
 DROP TEMPORARY TABLE IF EXISTS numeros;
 SET SQL_SAFE_UPDATES = 1;

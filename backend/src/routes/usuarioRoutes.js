@@ -3,6 +3,7 @@ const router = express.Router();
 
 const {
   obtenerUsuarios,
+  obtenerResumenUsuarios,
   obtenerUsuarioPorId,
   crearUsuario,
   actualizarUsuario,
@@ -24,6 +25,9 @@ router.use(verificarToken);
 
 // 1. Listar usuarios (Admin ve todos, Profesor solo alumnos)
 router.get('/', permitirRoles(1, 2), obtenerUsuarios);
+
+// 1 bis. Cantidad de usuarios por rol (va antes de '/:id' para que no se confunda con un id)
+router.get('/resumen', permitirRoles(1, 2), obtenerResumenUsuarios);
 
 // 2. Ver un usuario con sus suscripciones activas
 router.get('/:id', obtenerUsuarioPorId);

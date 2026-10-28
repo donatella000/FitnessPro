@@ -189,25 +189,53 @@ function Pelota() {
 }
 
 // ---------- Primavera: flor con tallo ----------
+// Ocho pétalos grandes que se superponen, cada uno con su base más oscura,
+// líneas cortas entre pétalo y pétalo, centro amarillo con borde y brillo,
+// tallo con dos hojas y una sombra verde en el piso.
+const FLOR_CY = 205;
+const FLOR_CENTRO = 120;
+
 function Flor() {
-  const cy = 230;
-  const petalos = Array.from({ length: 8 }, (_, i) => (i / 8) * Math.PI * 2);
+  const cy = FLOR_CY;
+  const angulos = Array.from({ length: 8 }, (_, i) => i * 45 - 90);
+  const punto = (grados, r) => {
+    const a = (grados * Math.PI) / 180;
+    return { x: CX + Math.cos(a) * r, y: cy + Math.sin(a) * r };
+  };
+
   return (
     <g>
-      <path d={`M${CX},${cy + 120} C${CX - 12},390 ${CX + 10},420 ${CX},460`} stroke="#4a9e1f" strokeWidth="12" fill="none" strokeLinecap="round" />
-      <ellipse cx="148" cy="412" rx="46" ry="18" fill="#56a630" transform="rotate(-24 148 412)" />
-      <ellipse cx="252" cy="404" rx="46" ry="18" fill="#56a630" transform="rotate(24 252 404)" />
-      <path d="M110,428 Q148,410 186,398 M290,420 Q252,402 214,390" stroke="#3e7d1b" strokeWidth="2.4" fill="none" />
-      {petalos.map((a, i) => (
-        <circle key={i} cx={CX + Math.cos(a) * 152} cy={cy + Math.sin(a) * 152} r="46" fill="#f7b0ba" />
-      ))}
-      {petalos.map((a, i) => (
-        <circle key={`i${i}`} cx={CX + Math.cos(a) * 140} cy={cy + Math.sin(a) * 140} r="26" fill="#f26b6b" />
-      ))}
-      {petalos.map((a, i) => (
-        <line key={`v${i}`} x1={CX + Math.cos(a + 0.39) * 134} y1={cy + Math.sin(a + 0.39) * 134} x2={CX + Math.cos(a + 0.39) * 168} y2={cy + Math.sin(a + 0.39) * 168} stroke="#c2577d" strokeWidth="3" strokeLinecap="round" />
-      ))}
-      <circle cx={CX} cy={cy} r="138" fill="#ffd23f" stroke="#f2b705" strokeWidth="6" />
+      {/* Sombra en el piso, tallo y hojas */}
+      <ellipse cx={CX} cy="452" rx="42" ry="7" fill="#7fd47f" />
+      <path d={`M${CX - 4},${cy + 150} C${CX - 10},400 ${CX + 14},425 ${CX + 2},452`} stroke="#2e8b1e" strokeWidth="10" fill="none" strokeLinecap="round" />
+      <path d={`M${CX},400 C${CX - 30},392 ${CX - 70},372 ${CX - 108},376 C${CX - 92},408 ${CX - 50},426 ${CX - 6},412 Z`} fill="#4fa82a" />
+      <path d={`M${CX},404 C${CX - 40},396 ${CX - 76},386 ${CX - 100},380`} stroke="#3a8a1c" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d={`M${CX - 46},398 L${CX - 56},386 M${CX - 70},392 L${CX - 80},382`} stroke="#3a8a1c" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <path d={`M${CX + 4},392 C${CX + 34},384 ${CX + 74},362 ${CX + 112},366 C${CX + 96},398 ${CX + 54},418 ${CX + 8},404 Z`} fill="#4fa82a" />
+      <path d={`M${CX + 6},396 C${CX + 44},388 ${CX + 80},376 ${CX + 104},370`} stroke="#3a8a1c" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d={`M${CX + 50},388 L${CX + 60},376 M${CX + 74},382 L${CX + 84},372`} stroke="#3a8a1c" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+
+      {/* Pétalos rosados grandes */}
+      {angulos.map((g, i) => {
+        const c = punto(g, 136);
+        return <ellipse key={`p${i}`} cx={c.x} cy={c.y} rx="62" ry="54" fill="#f7aeb8" transform={`rotate(${g} ${c.x} ${c.y})`} />;
+      })}
+      {/* Base más oscura de cada pétalo */}
+      {angulos.map((g, i) => {
+        const c = punto(g, 128);
+        return <ellipse key={`b${i}`} cx={c.x} cy={c.y} rx="30" ry="32" fill="#f46b6b" transform={`rotate(${g} ${c.x} ${c.y})`} />;
+      })}
+      {/* Líneas cortas entre pétalos, cerca del centro */}
+      {angulos.map((g, i) => {
+        const a = punto(g + 22.5, FLOR_CENTRO - 4);
+        const b = punto(g + 22.5, FLOR_CENTRO + 26);
+        return <line key={`l${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="#b4587f" strokeWidth="5" strokeLinecap="round" />;
+      })}
+
+      {/* Centro amarillo con borde y brillo */}
+      <circle cx={CX} cy={cy} r={FLOR_CENTRO} fill="#ffd23f" stroke="#f5b400" strokeWidth="8" />
+      <path d={`M${CX - 78},${cy - 56} A96,96 0 0 1 ${CX - 20},${cy - 92}`} stroke="#ffffff" strokeWidth="11" fill="none" strokeLinecap="round" opacity="0.75" />
+      <circle cx={CX + 4} cy={cy - 96} r="6" fill="#ffffff" opacity="0.8" />
     </g>
   );
 }
@@ -251,7 +279,7 @@ export default function EmblemaTematico({ tema }) {
         {!['mundial', 'primavera', 'halloween'].includes(tema) && <CirculoBase />}
 
         {tema === 'mundial' && <IconoYPalabra ancho={112} />}
-        {tema === 'primavera' && <IconoYPalabra contorno={3} colorContorno="#7a4b00" cy={230} ancho={128} />}
+        {tema === 'primavera' && <IconoYPalabra contorno={3} colorContorno="#7a4b00" cy={FLOR_CY + 6} ancho={112} />}
         {tema === 'halloween' && <IconoYPalabra color="#ffd54a" contorno={2.5} colorContorno="#8a3300" cy={292} ancho={150} />}
         {!['mundial', 'primavera', 'halloween'].includes(tema) && <IconoYPalabra ancho={158} />}
 
