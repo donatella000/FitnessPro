@@ -1,6 +1,8 @@
+// Las variables del .env se cargan PRIMERO, antes de cualquier otro archivo del proyecto
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
 const db = require('./src/config/db');
 const { iniciarTareaCumpleanios } = require('./src/tareas/cumpleanios');
 
@@ -21,7 +23,8 @@ const PORT = process.env.PORT || 3000;
 
 // Middlewares globales
 app.use(cors());
-app.use(express.json({ limit: '2mb'}));
+// Límite de 2 MB para poder recibir fotos de perfil e íconos de actividades
+app.use(express.json({ limit: '2mb' }));
 
 // Montaje de las rutas de la API
 app.use('/api/auth', authRoutes);
@@ -32,8 +35,8 @@ app.use('/api/rutinas', rutinaRoutes);
 app.use('/api/suscripciones', suscripcionRoutes);
 app.use('/api/pagos', pagoRoutes);
 app.use('/api/puntos', puntosRoutes);
-app.use('/api/dashboard', dashboardRoutes); // NUEVO
-app.use('/api/publico', publicoRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/publico', publicoRoutes); // rutas públicas para la portada (sin sesión)
 
 // Ruta de prueba de salud de la API
 app.get('/api/saludo', (req, res) => {
@@ -48,6 +51,7 @@ const iniciarServidor = async () => {
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor corriendo en el puerto http://localhost:${PORT}`);
+      // Saludo de cumpleaños: revisa al arrancar y después una vez por hora
       iniciarTareaCumpleanios();
     });
   } catch (error) {

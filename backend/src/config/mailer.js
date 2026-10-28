@@ -1,16 +1,28 @@
 const nodemailer = require('nodemailer');
 // dotenv ya se carga en server.js
 
-// Transportador de Gmail, reutilizable en toda la app
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+// Transportador de Gmail. Se crea recién al enviar el primer correo, así lee las
+// variables del .env aunque este archivo se cargue antes que dotenv en server.js.
+let transporterCreado = null;
+const transporter = {
+  sendMail: (opciones) => {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      return Promise.reject(new Error('Faltan EMAIL_USER o EMAIL_PASS en el archivo .env del backend.'));
+    }
+    if (!transporterCreado) {
+      transporterCreado = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+    }
+    return transporterCreado.sendMail(opciones);
   },
-});
+};
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const urlFrontend = () => process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Plantilla común de los correos, con los colores de FitnessPro
 function plantilla(titulo, contenido) {
@@ -35,7 +47,7 @@ const boton = (texto, url) => `
 `;
 
 async function enviarMailRecuperacion(destinatario, token) {
-  const link = `${FRONTEND_URL}/restablecer-password?token=${token}`;
+  const link = `${urlFrontend()}/restablecer-password?token=${token}`;
 
   await transporter.sendMail({
     from: `"FitnessPro" <${process.env.EMAIL_USER}>`,
@@ -79,7 +91,7 @@ async function enviarMailBienvenida({ destinatario, nombre, puntos, altaPorStaff
       <p>Nos alegra que te sumes. Desde tu cuenta vas a poder elegir tu abono, reservar turnos, ver tu rutina y sumar puntos con cada asistencia.</p>
       ${regalo}
       ${pasos}
-      ${boton('Ir a FitnessPro', FRONTEND_URL)}
+      ${boton('Ir a FitnessPro', urlFrontend())}
     `),
   });
 }
@@ -97,7 +109,7 @@ async function enviarMailCumpleanios({ destinatario, nombre, puntos }) {
     html: plantilla(`¡Feliz cumpleaños, ${nombre}!`, `
       <p>Todo el equipo de FitnessPro te desea un muy feliz cumpleaños.</p>
       ${regalo}
-      ${boton('Ver mis puntos', `${FRONTEND_URL}/dashboard?vista=alumno&seccion=puntos`)}
+      ${boton('Ver mis puntos', `${urlFrontend()}/dashboard?vista=alumno&seccion=puntos`)}
     `),
   });
 }
